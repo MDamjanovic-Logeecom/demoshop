@@ -13,27 +13,17 @@
             background-color: #f5f5f5;
         }
 
-        /* Big container box */
-        .main-box {
-            position: relative;
-            width: 90%;
-            margin: 0 auto;
-            background-color: #fff;
-            border: 2px solid #ccc;
-            padding: 20px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        /* --- Page layout wrapper --- */
+        .layout {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 0px;
+            flex-wrap: wrap;
         }
 
-        /* Title inside the box */
-        .main-box h2 {
-            margin: 0 0 10px 0;
-        }
-
-        /* Top-left buttons outside the box */
+        /* Left-side buttons column */
         .side-buttons {
-            position: absolute;
-            top: -10px;
-            left: -90px;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -42,41 +32,63 @@
         .side-buttons button {
             padding: 8px 12px;
             cursor: pointer;
+            border-radius: 4px 0 0 4px;
+            border-right: none;
+            text-align: left;
         }
 
-        /* Buttons inside the box, left and right */
+        /* Big box */
+        .main-box {
+            flex: 1;
+            min-width: 300px;
+            max-width: 1200px;
+            background-color: #fff;
+            border: 2px solid #ccc;
+            padding: 20px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .main-box h2 {
+            margin: 0 0 15px 0;
+        }
+
+        /* Inside buttons */
         .box-buttons {
             display: flex;
             justify-content: space-between;
+            align-items: flex-start;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .box-buttons .left-buttons {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            flex-wrap: wrap;
             gap: 10px;
         }
 
-        .box-buttons .left-buttons button,
-        .box-buttons .right-buttons button {
-            padding: 6px 10px;
+        .box-buttons button {
+            padding: 2px 10px;
             cursor: pointer;
+            background-color: white;
         }
 
-        /* Table */
+        /* Table styling */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
 
-        table, th, td {
-            border: 1px solid #ccc;
-        }
-
         th, td {
+            border: 1px solid #ccc;
             padding: 8px;
             text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
         }
 
         /* Paginator */
@@ -89,67 +101,104 @@
             margin: 0 2px;
             cursor: pointer;
         }
+
+        /* Center content in table cells */
+        td.checkbox-cell,
+        td.button-cell {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        /* Optional: make buttons a bit nicer */
+        td.button-cell button {
+            padding: 4px 8px;
+            cursor: pointer;
+            background-color: white;
+            border-color: #cccccc;
+        }
+
     </style>
 </head>
 <body>
 
-<div class="main-box">
-    <!-- Top-left outside buttons -->
+<div class="layout">
+    <!-- Left-side buttons -->
     <div class="side-buttons">
-        <button>Button 1</button>
-        <button>Button 2</button>
-        <button>Button 3</button>
-        <button>Button 4</button>
+        <button>Dashboard</button>
+        <button>Products</button>
+        <button>Product Categories</button>
+        <button>Users</button>
     </div>
 
-    <!-- Box title -->
-    <h2>Products</h2>
+    <!-- Main box -->
+    <div class="main-box">
+        <h2>Products</h2>
 
-    <!-- Buttons inside the box -->
-    <div class="box-buttons">
-        <div class="left-buttons">
-            <button>Left 1</button>
-            <button>Left 2</button>
-            <button>Left 3</button>
-            <button>Left 4</button>
+        <!-- Inside buttons -->
+        <div class="box-buttons">
+            <div class="left-buttons">
+                <button>Add new product</button>
+                <button>Delete selected</button>
+                <button>Enable selected</button>
+                <button>Disable selected</button>
+            </div>
+            <div class="right-buttons">
+                <button>Filter</button>
+            </div>
         </div>
-        <div class="right-buttons">
-            <button>Right</button>
-        </div>
-    </div>
 
-    <!-- Main table -->
-    <table>
-        <thead>
-        <tr>
-            <th>Product</th>
-            <th>Price</th>
-            <th>Stock</th>
-            <th>Category</th>
-        </tr>
-        </thead>
-        <tbody>
-        <?php for($i=1; $i<=10; $i++): ?>
+        <!-- Table -->
+        <table>
+            <thead>
             <tr>
-                <td>Product <?= $i ?></td>
-                <td>$<?= rand(10,100) ?></td>
-                <td><?= rand(0,50) ?></td>
-                <td>Category <?= rand(1,5) ?></td>
+                <th>Selected</th>
+                <th>Title</th>
+                <th>SKU</th>
+                <th>Brand</th>
+                <th>Category</th>
+                <th>Short description</th>
+                <th>Price</th>
+                <th>Enabled</th>
+                <th>     </th>
+                <th>     </th>
             </tr>
-        <?php endfor; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            <?php for($i=1; $i<=10; $i++): ?>
+                <tr>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" name="select_item[]" value="<?= $i ?>">
+                    </td>
+                    <td>Title <?= $i ?></td>
+                    <td>$<?= rand(10,100) ?></td>
+                    <td>Brand <?= rand(1,5) ?></td>
+                    <td>Category <?= rand(1,9) ?></td>
+                    <td>Description <?= rand(1, 20) ?></td>
+                    <td><?= rand(0,50) ?></td>
+                    <td class="checkbox-cell">
+                        <input type="checkbox" name="select_item[]" value="<?= $i ?>">
+                    </td>
+                    <td class="button-cell">
+                        <button type="button" onclick="alert('Edit<?= $i ?>')">Edit</button>
+                    </td>
+                    <td class="button-cell">
+                        <button type="button" onclick="alert('Delete<?= $i ?>')">Delete</button>
+                    </td>
+                </tr>
+            <?php endfor; ?>
+            </tbody>
+        </table>
 
-    <!-- Paginator -->
-    <div class="paginator">
-        <button>&lt;&lt;</button>
-        <button>&lt;</button>
-        <span>1</span>
-        <button>&gt;</button>
-        <button>&gt;&gt;</button>
+        <!-- Paginator -->
+        <div class="paginator">
+            <button>&lt;&lt;</button>
+            <button>&lt;</button>
+            <span>1</span>
+            <button>&gt;</button>
+            <button>&gt;&gt;</button>
+        </div>
     </div>
 </div>
 
 </body>
 </html>
-
