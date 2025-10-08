@@ -1,6 +1,31 @@
 <?php
-// index.php
+/** @var PDO $pdo */ // in order for PHPStorm to know that it imports the variable from req file
+require 'db_connect.php';
+
+$products = [];
+
+try {
+    $stmt = $pdo->query("SELECT * FROM products");
+
+    while ($row = $stmt->fetch()) {
+        $products[] = [
+                'Title' => $row['Title'],
+                'SKU' => $row['SKU'],
+                'Brand' => $row['Brand'],
+                'Category' => $row['Category'],
+                'Short description' => $row['Dscrptn'],
+                'Price' => (float)$row['Price'],
+                'Enabled' => (bool)$row['Enabled']
+        ];
+    }
+
+} catch (PDOException $e) {
+    echo "Query failed: " . $e->getMessage();
+}
+
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -164,28 +189,32 @@
             </tr>
             </thead>
             <tbody>
-            <?php for($i=1; $i<=10; $i++): ?>
-                <tr>
-                    <td class="checkbox-cell">
-                        <input type="checkbox" name="select_item[]" value="<?= $i ?>">
-                    </td>
-                    <td>Title <?= $i ?></td>
-                    <td>$<?= rand(10,100) ?></td>
-                    <td>Brand <?= rand(1,5) ?></td>
-                    <td>Category <?= rand(1,9) ?></td>
-                    <td>Description <?= rand(1, 20) ?></td>
-                    <td><?= rand(0,50) ?></td>
-                    <td class="checkbox-cell">
-                        <input type="checkbox" name="select_item[]" value="<?= $i ?>">
-                    </td>
-                    <td class="button-cell">
-                        <button type="button" onclick="alert('Edit<?= $i ?>')">Edit</button>
-                    </td>
-                    <td class="button-cell">
-                        <button type="button" onclick="alert('Delete<?= $i ?>')">Delete</button>
-                    </td>
+            <?php foreach ($products as $index => $product): ?>
+                <td class="checkbox-cell">
+                    <input type="checkbox" name="select_item[]" value="<?= $index ?>">
+                </td>
+                <td><?= htmlspecialchars($product['Title']) ?></td>
+                <td><?= htmlspecialchars($product['SKU']) ?></td>
+                <td><?= htmlspecialchars($product['Brand']) ?></td>
+                <td><?= htmlspecialchars($product['Category']) ?></td>
+                <td><?= htmlspecialchars($product['Short description']) ?></td>
+                <td>$<?= number_format($product['Price'], 2) ?></td>
+                <td class="checkbox-cell">
+                    <input
+                            type="checkbox"
+                            name="enabled[]"
+                            value="<?= $index ?>"
+                            <?= $product['Enabled'] ? 'checked' : '' ?>
+                            onchange="toggleEnabled(<?= $index ?>, this.checked)">
+                </td>
+                <td class="button-cell">
+                    <button type="button" onclick="alert('Edit <?= $product['Title'] ?>')">Edit</button>
+                </td>
+                <td class="button-cell">
+                    <button type="button" onclick="alert('Delete <?= $product['Title'] ?>')">Delete</button>
+                </td>
                 </tr>
-            <?php endfor; ?>
+            <?php endforeach; ?>
             </tbody>
         </table>
 
