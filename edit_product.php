@@ -1,0 +1,264 @@
+<?php
+/** @var PDO $pdo */
+require 'db_connect.php'; // include your connection
+
+// Fetching product
+if (isset($_GET['sku'])) {
+    $sku = $_GET['sku'];
+
+    // Fetching product from database
+    $product = getProductBySKU($sku);
+
+    if (!$product) {
+        die("Product not found.");
+    }
+} else {
+    die("No SKU provided.");
+}
+
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Capture submitted data
+    $sku = isset($_POST['sku']) ? $_POST['sku'] : '';
+    $title = isset($_POST['title']) ? $_POST['title'] : '';
+    $brand = isset($_POST['brand']) ? $_POST['brand'] : '';
+    $category = isset($_POST['category']) ? $_POST['category'] : '';
+    $sdescription = isset($_POST['short_description']) ? $_POST['short_description'] : '';
+    $ldescription = isset($_POST['description']) ? $_POST['description'] : '';
+    $enabled = isset($_POST['enabled']) ? 1 : 0;
+    $featured = isset($_POST['featured']) ? 1 : 0;
+    $imageFile = isset($_FILES['image']) ? $_FILES['image'] : null; // Capture uploaded image file if any
+
+
+    $success = editProduct($sku, $title, $brand, $category, $sdescription, $ldescription, $enabled, $imageFile);
+
+    if ($success) {
+        echo "Product updated successfully!";
+    } else {
+        echo "Error updating product.";
+    }
+
+    //TODO: do the image verification before sending to DB
+//    $imgOK = true;
+//    //if tried to upload image, must check it - else, go on freely
+//    if($imageFile != null) {
+//        // If img exists
+//        if(!imageIsOkay($imageFile) || $imageFile['error'] != UPLOAD_ERR_OK) { //check if meets conditions and is uploaded correctly
+//            //echo "<script>alert('NO.');</script>";
+//            echo "SMTH WRONG";
+//            $imgOK = false;
+//        }else {
+//            $success = testUpdateProduct($sku, $title, $brand, $category, $sdescription, $ldescription, $enabled, $imageFile);
+//            echo "EVRTHNG GOOD";
+//        }
+//    }else {
+//        echo "NO UPLOAD";
+//        //echo "<script>alert('not even uploaded');</script>";
+//        $success = testUpdateProduct1($sku, $title, $brand, $category, $sdescription, $ldescription, $enabled);
+//    }
+
+   // header("Location: index.php"); // go back to product list
+    //exit;
+}
+
+function imageIsOkay($imageFile) {
+
+    $info = getimagesize($imageFile['tmp_name']);
+    if (!$info) {
+        echo "<script>alert('Uploaded file is not a valid image.');</script>";
+        return false;
+    }
+    //TODO: must revisit aspect ratio checking
+    $width = $info[0];
+    $height = $info[1];
+    $ratio = $width / $height;
+
+    if ($width < 600) {
+//        echo "<script>alert('Image width must be at least 600px.');</script>";
+//        return false;
+    }
+
+    if ($ratio < 4/3 || $ratio > 16/9) {
+//        echo "<script>alert('Image aspect ratio must be between 4:3 and 16:9.');</script>";
+//        return false;
+    }
+
+    return true;
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Product</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .form-grid {
+            display: flex;
+            gap: 40px;
+        }
+
+        .left-side {
+            flex: 2;
+        }
+
+        .right-side {
+            flex: 1;
+            text-align: center;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            width: 150px;
+            text-align: right;
+            margin-right: 10px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            flex: 1;
+            padding: 6px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .checkbox-group label {
+            margin-left: 8px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        td.button-upload button,
+        .right-side button {
+            padding: 4px 8px;
+            cursor: pointer;
+            background-color: white;
+            border-color: #cccccc;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Product Details</h2>
+    <form method="post" enctype="multipart/form-data">
+        <div class="form-grid">
+            <div class="left-side">
+                <div class="form-group">
+                    <label>SKU:</label>
+                    <input type="text" name="sku" value="<?= htmlspecialchars($product['SKU']) ?>">
+                </div>
+                <div class="form-group">
+                    <label>Title:</label>
+                    <input type="text" name="title" value="<?= htmlspecialchars($product['Title']) ?>">
+                </div>
+                <div class="form-group">
+                    <label>Brand:</label>
+                    <input type="text" name="brand" value="<?= htmlspecialchars($product['Brand']) ?>">
+                </div>
+                <div class="form-group">
+                    <label>Category:</label>
+                    <select name="category">
+                        <option value="Laptop" <?= $product['Category'] === 'Laptop' ? 'selected' : '' ?>>Laptop</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Price:</label>
+                    <input type="number" step="0.01" name="price" value="<?= htmlspecialchars($product['Price']) ?>">
+                </div>
+                <div class="form-group">
+                    <label>Short Description:</label>
+                    <textarea name="short_description"><?= htmlspecialchars($product['Dscrptn']) ?></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Description:</label>
+                    <textarea name="description"><?= htmlspecialchars($product['LDscrptn'])  ?></textarea>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" name="enabled" <?= $product['Enabled'] ? 'checked' : '' ?>>
+                    <label>Enabled in Shop</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" name="featured" <?= $product['Featured'] ? 'checked' : '' ?>>
+                    <label>Featured</label>
+                </div>
+            </div>
+
+            <div class="right-side">
+                <!-- Image preview -->
+                <img id="preview"
+                     src="<?= !empty($product['Image']) ? $product['Image'] : 'placeholder.jpg' ?>"
+                     alt="Product Image"
+                     style="min-width:300px; min-height:300px; display:block; margin-bottom:5px;">
+
+                <!-- Hidden file input -->
+                <input type="file" id="file" name="image" style="display:none;" accept="image/*" onchange="handleFileSelect(event)">
+
+                <button type="button" onclick="document.getElementById('file').click();">
+                    Upload
+                </button>
+            </div>
+        </div>
+        <div class="right-side" style=" text-align: right;">
+            <button type="submit">Save</button>
+        </div>
+    </form>
+</div>
+</body>
+<script>
+
+    //Variable to store the selected image file
+    let uploadedFile = null;
+
+    //Called when a file is selected
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Store file in a variable
+        uploadedFile = file;
+
+        // Preview updated
+        const preview = document.getElementById('preview');
+        preview.src = URL.createObjectURL(file);
+    }
+
+</script>
+</html>
+

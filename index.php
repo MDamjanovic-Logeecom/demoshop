@@ -2,27 +2,7 @@
 /** @var PDO $pdo */ // in order for PHPStorm to know that it imports the variable from req file
 require 'db_connect.php';
 
-$products = [];
-
-try {
-    $stmt = $pdo->query("SELECT * FROM products");
-
-    while ($row = $stmt->fetch()) {
-        $products[] = [
-                'Title' => $row['Title'],
-                'SKU' => $row['SKU'],
-                'Brand' => $row['Brand'],
-                'Category' => $row['Category'],
-                'Short description' => $row['Dscrptn'],
-                'Price' => (float)$row['Price'],
-                'Enabled' => (bool)$row['Enabled']
-        ];
-    }
-
-} catch (PDOException $e) {
-    echo "Query failed: " . $e->getMessage();
-}
-
+$products = getAllProducts();
 
 ?>
 
@@ -208,7 +188,10 @@ try {
                             onchange="toggleEnabled(<?= $index ?>, this.checked)">
                 </td>
                 <td class="button-cell">
-                    <button type="button" onclick="alert('Edit <?= $product['Title'] ?>')">Edit</button>
+                    <form action="edit_product.php" method="get" style="display:inline;">
+                        <input type="hidden" name="sku" value="<?= $product['SKU'] ?>">
+                        <button type="submit">Edit</button>
+                    </form>
                 </td>
                 <td class="button-cell">
                     <button type="button" onclick="alert('Delete <?= $product['Title'] ?>')">Delete</button>
