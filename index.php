@@ -4,6 +4,21 @@ require 'db_connect.php';
 
 $products = getAllProducts();
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_sku'])) {
+    $skuToDelete = $_POST['delete_sku'];
+    $deleted = deleteProductBySKU($skuToDelete);
+
+    if ($deleted) {
+        echo "<script>alert('Product deleted successfully.');</script>";
+    } else {
+        echo "<script>alert('Product not found or could not be deleted.');</script>";
+    }
+
+    // Reloading page to refresh the product list
+    echo "<script>window.location.href='index.php';</script>";
+    exit;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -142,7 +157,7 @@ $products = getAllProducts();
         <!-- Inside buttons -->
         <div class="box-buttons">
             <div class="left-buttons">
-                <button>Add new product</button>
+                <button type="button" onclick="window.location.href='add_product.php'">Add new product</button>
                 <button>Delete selected</button>
                 <button>Enable selected</button>
                 <button>Disable selected</button>
@@ -194,7 +209,10 @@ $products = getAllProducts();
                     </form>
                 </td>
                 <td class="button-cell">
-                    <button type="button" onclick="alert('Delete <?= $product['Title'] ?>')">Delete</button>
+                    <form action="index.php" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete <?= htmlspecialchars($product['Title']) ?>?');">
+                        <input type="hidden" name="delete_sku" value="<?= htmlspecialchars($product['SKU']) ?>">
+                        <button type="submit">Delete</button>
+                    </form>
                 </td>
                 </tr>
             <?php endforeach; ?>

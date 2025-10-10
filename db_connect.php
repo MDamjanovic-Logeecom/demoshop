@@ -94,6 +94,72 @@ function getProductBySKU($sku) {
     ];
 }
 
+// Adds a product
+function addProduct($sku, $title, $brand, $category, $sdescription = null, $enabled = null, $imageFile = null, $ldescription = null) {
+    global $pdo;
+
+    try {
+        // Base SQL query
+        $sql = "INSERT INTO products (SKU, Title, Brand, Category, Dscrptn, LDscrptn, Enabled";
+
+        // Base SQL query (without image yet)
+        $params = [
+            ':sku' => $sku,
+            ':title' => $title,
+            ':brand' => $brand,
+            ':category' => $category,
+            ':sdescription' => $sdescription,
+            ':ldescription' => $ldescription,
+            ':enabled' => $enabled
+        ];
+
+        // If image is uploaded, convert to BLOB and include in SQL
+        if ($imageFile && isset($imageFile['tmp_name']) && is_uploaded_file($imageFile['tmp_name'])) {
+            $sql .= ", Image";
+            $params[':image'] = file_get_contents($imageFile['tmp_name']);
+        }
+
+        $sql .= ") VALUES (:sku, :title, :brand, :category, :sdescription, :ldescription, :enabled";
+
+        if (isset($params[':image'])) {
+            $sql .= ", :image";
+        }
+
+        $sql .= ")";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+
+        return true;
+
+    } catch (PDOException $e) {
+        echo "Insert failed: " . $e->getMessage();
+        return false;
+    }
+}
+
+// Delete a product
+function deleteProductBySKU($sku) {
+    global $pdo;
+
+    try {
+        $stmt = $pdo->prepare("DELETE FROM products WHERE SKU = :sku");
+        $stmt->bindParam(':sku', $sku);
+        $stmt->execute();
+
+        // Check if any row was affected
+        if ($stmt->rowCount() > 0) {
+            return true; // Successfully deleted
+        } else {
+            return false; // SKU not found
+        }
+    } catch (PDOException $e) {
+        echo "Delete failed: " . $e->getMessage();
+        return false;
+    }
+}
+
+
 // Edits a product
 function editProduct($sku, $title, $brand, $category, $sdescription, $ldescription, $enabled, $imageFile = null) { // imageFile parameter is optional (not defined as null)
     global $pdo;
