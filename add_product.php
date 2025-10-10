@@ -14,13 +14,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $enabled = isset($_POST['enabled']) ? 1 : 0;
     $featured = isset($_POST['featured']) ? 1 : 0;
     $imageFile = isset($_FILES['image']) ? $_FILES['image'] : null; // Capture uploaded image file if any
+    $price = isset($_POST['price']) ? $_POST['price'] : 0;
+
 
     if ($imageFile && $imageFile['error'] === UPLOAD_ERR_OK) { // If img uploaded -> check if valid b4 sending to db
         if(imageIsOkay($imageFile)) {
-            $success = addProduct($sku, $title, $brand, $category, $sdescription, $enabled, $imageFile, $ldescription);
+            $success = addProduct($sku, $title, $brand, $category, $sdescription, $enabled, $imageFile, $ldescription, $price);
         }
     }else { // If no img upload, nothing to validate
-        $success = addProduct($sku, $title, $brand, $category, $sdescription, $enabled, $imageFile, $ldescription);
+        $success = addProduct($sku, $title, $brand, $category, $sdescription, $enabled, $imageFile, $ldescription, $price);
     }
 
     if ($success) {

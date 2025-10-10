@@ -95,12 +95,12 @@ function getProductBySKU($sku) {
 }
 
 // Adds a product
-function addProduct($sku, $title, $brand, $category, $sdescription = null, $enabled = null, $imageFile = null, $ldescription = null) {
+function addProduct($sku, $title, $brand, $category, $sdescription = null, $enabled = null, $imageFile = null, $ldescription = null, $price = null) {
     global $pdo;
 
     try {
         // Base SQL query
-        $sql = "INSERT INTO products (SKU, Title, Brand, Category, Dscrptn, LDscrptn, Enabled";
+        $sql = "INSERT INTO products (SKU, Title, Brand, Category, Dscrptn, LDscrptn, Enabled, Price";
 
         // Base SQL query (without image yet)
         $params = [
@@ -110,7 +110,8 @@ function addProduct($sku, $title, $brand, $category, $sdescription = null, $enab
             ':category' => $category,
             ':sdescription' => $sdescription,
             ':ldescription' => $ldescription,
-            ':enabled' => $enabled
+            ':enabled' => $enabled,
+            ':price' => $price
         ];
 
         // If image is uploaded, convert to BLOB and include in SQL
@@ -119,7 +120,7 @@ function addProduct($sku, $title, $brand, $category, $sdescription = null, $enab
             $params[':image'] = file_get_contents($imageFile['tmp_name']);
         }
 
-        $sql .= ") VALUES (:sku, :title, :brand, :category, :sdescription, :ldescription, :enabled";
+        $sql .= ") VALUES (:sku, :title, :brand, :category, :sdescription, :ldescription, :enabled, :price";
 
         if (isset($params[':image'])) {
             $sql .= ", :image";
