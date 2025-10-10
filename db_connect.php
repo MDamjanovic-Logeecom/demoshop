@@ -1,4 +1,9 @@
 <?php
+
+//use models\Product;
+
+require './models/Product.php';
+
 $host = 'localhost';  // MySQL server on windows from WSL
 $db   = 'milos';       // DB name
 $user = 'root';       // MySQL user
@@ -20,10 +25,11 @@ try {
     echo "Connection failed: " . $e->getMessage();
 }
 
+//TODO: MOVE ALL OF THIS INTO ProductRepository!!!!!!!!!!!!!!
 //------------------------------------- Database interactions:
 
 // Fetch all products in db
-function getAllProducts() {
+function getAllProducts(): array { //TODO: to be tested
     global $pdo;
 
     $products = [];
@@ -41,17 +47,24 @@ function getAllProducts() {
                 $imageData = "data:image/jpeg;base64," . $base64;
             }
 
-            $products[] = [
-                'Title' => $row['Title'],
-                'SKU' => $row['SKU'],
-                'Brand' => $row['Brand'],
-                'Category' => $row['Category'],
-                'Short description' => $row['Dscrptn'],
-                'description' => $row['LDscrptn'],
-                'Price' => (float)$row['Price'],
-                'Enabled' => (bool)$row['Enabled'],
-                'Image' => $imageData
-            ];
+            // Ensure all fields match Product class types
+            $sku   = isset($row['SKU']) ? (string)$row['SKU'] : '';
+            $title = isset($row['Title']) ? (string)$row['Title'] : '';
+            $brand = isset($row['Brand']) ? (string)$row['Brand'] : '';
+            $category = isset($row['Category']) ? (string)$row['Category'] : '';
+            $sdesc = isset($row['Dscrptn']) ? (string)$row['Dscrptn'] : null;
+            $ldesc = isset($row['LDscrptn']) ? (string)$row['LDscrptn'] : null;
+            $price = isset($row['Price']) ? (float)$row['Price'] : 0.0;
+            $enabled = isset($row['Enabled']) ? (bool)$row['Enabled'] : false;
+
+            //$product = new Product();
+            try {
+                $product = new Product($sku, $title, $brand, $category, $sdesc, $ldesc, $price, $imageData, $enabled);
+            }catch (Exception $e) {
+                echo $e->getMessage();
+            }
+
+            $products[] = $product;
         }
 
     } catch (PDOException $e) {

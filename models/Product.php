@@ -1,11 +1,12 @@
 <?php
 
-namespace models;
+//namespace models;
 
 class Product {
     private string $sku;
     private string $title;
     private string $brand;
+    private string $category;
     private ?string $shortDescription;
     private ?string $longDescription;
     private float $price;
@@ -16,6 +17,7 @@ class Product {
         string $sku,
         string $title,
         string $brand,
+        string $category,
         ?string $shortDescription = null,
         ?string $longDescription = null,
         float $price = 0.0,
@@ -25,6 +27,7 @@ class Product {
         $this->sku = $sku;
         $this->title = $title;
         $this->brand = $brand;
+        $this->category = $category;
         $this->shortDescription = $shortDescription;
         $this->longDescription = $longDescription;
         $this->price = $price;
@@ -43,6 +46,10 @@ class Product {
 
     public function getBrand(): string {
         return $this->brand;
+    }
+
+    public function getCategory(): string {
+        return $this->category;
     }
 
     public function getShortDescription(): ?string {
@@ -72,6 +79,10 @@ class Product {
 
     public function setBrand(string $brand): void {
         $this->brand = $brand;
+    }
+
+    public function setCategory(string $category): void {
+        $this->category = $category;
     }
 
     public function setShortDescription(?string $desc): void {
