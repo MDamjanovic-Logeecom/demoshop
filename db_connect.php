@@ -32,12 +32,12 @@ function getAllProducts() {
 
         while ($row = $stmt->fetch()) {
 
-            //TODO this whole block for image conversion - not 100% sure about it
+            // Block for image conversion
             $imageData = null;
             if (!empty($row['Image'])) {
-                // Convert BLOB to base64 string
+                // BLOB -> base64
                 $base64 = base64_encode($row['Image']);
-                // Get MIME type (assuming jpeg/png; adjust if needed)
+                // MIME type
                 $imageData = "data:image/jpeg;base64," . $base64;
             }
 
@@ -50,7 +50,7 @@ function getAllProducts() {
                 'description' => $row['LDscrptn'],
                 'Price' => (float)$row['Price'],
                 'Enabled' => (bool)$row['Enabled'],
-                'Image' => $imageData // TODO: we'll see if it works
+                'Image' => $imageData
             ];
         }
 
@@ -65,11 +65,6 @@ function getAllProducts() {
 function getProductBySKU($sku) {
     global $pdo;
 
-//    $stmt = $pdo->prepare("SELECT * FROM products WHERE SKU = :sku");
-//    $stmt->bindParam(':sku', $sku);
-//    $stmt->execute();
-//
-//    return $stmt->fetch(PDO::FETCH_ASSOC); // returns product as associative array
     $stmt = $pdo->prepare("SELECT * FROM products WHERE SKU = :sku");
     $stmt->bindParam(':sku', $sku);
     $stmt->execute();
@@ -80,7 +75,7 @@ function getProductBySKU($sku) {
         return false;
     }
 
-    // Convert BLOB to Base64 for <img> if image exists
+    // Convert BLOB to Base64 for image if it exists
     $imageData = null;
     if (!empty($row['Image'])) {
         $imageData = "data:image/jpeg;base64," . base64_encode($row['Image']);
@@ -95,17 +90,16 @@ function getProductBySKU($sku) {
         'LDscrptn' => $row['LDscrptn'],
         'Price' => (float)$row['Price'],
         'Enabled' => (bool)$row['Enabled'],
-        'Featured' => (bool)$row['Featured'],
         'Image' => $imageData
     ];
 }
 
 // Edits a product
-function editProduct($sku, $title, $brand, $category, $sdescription, $ldescription, $enabled, $imageFile = null) {
+function editProduct($sku, $title, $brand, $category, $sdescription, $ldescription, $enabled, $imageFile = null) { // imageFile parameter is optional (not defined as null)
     global $pdo;
 
     try {
-        // Base SQL (without image)
+        // Base SQL query (without image yet)
         $sql = "UPDATE products 
                 SET Title = :title, 
                     Brand = :brand, 
@@ -142,26 +136,6 @@ function editProduct($sku, $title, $brand, $category, $sdescription, $ldescripti
         echo "Update failed: " . $e->getMessage();
         return false;
     }
-}
-
-
-function testUpdateProduct($sku, $title, $brand, $category, $sdescription, $ldescription, $enabled, $imageFile = null) {
-    echo "<h2>Received in db_connection.php</h2>";
-    echo "SKU: " . htmlspecialchars($sku) . "<br>";
-    echo "Title: " . htmlspecialchars($title) . "<br>";
-    echo "Brand: " . htmlspecialchars($brand) . "<br>";
-    echo "Category: " . htmlspecialchars($category) . "<br>";
-    echo "Description: " . htmlspecialchars($sdescription) . "<br>";
-    echo "LDescription: " . htmlspecialchars($ldescription) . "<br>";
-    echo "Enabled: " . $enabled . "<br>";
-
-    if ($imageFile && !empty($imageFile['name'])) {
-        echo "Image uploaded: " . htmlspecialchars($imageFile['name']);
-    } else {
-        echo "No image uploaded.";
-    }
-
-    return true; // just for testing
 }
 
 ?>

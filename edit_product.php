@@ -1,6 +1,6 @@
 <?php
 /** @var PDO $pdo */
-require 'db_connect.php'; // include your connection
+require 'db_connect.php'; // include db connection
 
 // Fetching product
 if (isset($_GET['sku'])) {
@@ -19,7 +19,7 @@ if (isset($_GET['sku'])) {
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Capture submitted data
-    $sku = isset($_POST['sku']) ? $_POST['sku'] : '';
+    $sku = isset($_POST['sku']) ? $_POST['sku'] : ''; // isset: if the field exists, use the value; if not -> use ''
     $title = isset($_POST['title']) ? $_POST['title'] : '';
     $brand = isset($_POST['brand']) ? $_POST['brand'] : '';
     $category = isset($_POST['category']) ? $_POST['category'] : '';
@@ -29,58 +29,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $featured = isset($_POST['featured']) ? 1 : 0;
     $imageFile = isset($_FILES['image']) ? $_FILES['image'] : null; // Capture uploaded image file if any
 
-
-    $success = editProduct($sku, $title, $brand, $category, $sdescription, $ldescription, $enabled, $imageFile);
-
-    if ($success) {
-        echo "Product updated successfully!";
-    } else {
-        echo "Error updating product.";
+    if ($imageFile && $imageFile['error'] === UPLOAD_ERR_OK) { // If img uploaded -> check if valid b4 sending to db
+        if(imageIsOkay($imageFile)) {
+            $success = editProduct($sku, $title, $brand, $category, $sdescription, $ldescription, $enabled, $imageFile);
+        }
+    }else { // If no img upload, nothing to validate
+        $success = editProduct($sku, $title, $brand, $category, $sdescription, $ldescription, $enabled, $imageFile);
     }
 
-    //TODO: do the image verification before sending to DB
-//    $imgOK = true;
-//    //if tried to upload image, must check it - else, go on freely
-//    if($imageFile != null) {
-//        // If img exists
-//        if(!imageIsOkay($imageFile) || $imageFile['error'] != UPLOAD_ERR_OK) { //check if meets conditions and is uploaded correctly
-//            //echo "<script>alert('NO.');</script>";
-//            echo "SMTH WRONG";
-//            $imgOK = false;
-//        }else {
-//            $success = testUpdateProduct($sku, $title, $brand, $category, $sdescription, $ldescription, $enabled, $imageFile);
-//            echo "EVRTHNG GOOD";
-//        }
-//    }else {
-//        echo "NO UPLOAD";
-//        //echo "<script>alert('not even uploaded');</script>";
-//        $success = testUpdateProduct1($sku, $title, $brand, $category, $sdescription, $ldescription, $enabled);
-//    }
+    if ($success) {
+        echo "<script>
+            alert('Product edited successfully.');
+            window.location.href = 'index.php';
+          </script>";
+    } else {
+        echo "<script>
+            alert('Error saving product.');
+            window.location.href = 'index.php';
+          </script>";
+    }
 
-   // header("Location: index.php"); // go back to product list
-    //exit;
 }
 
 function imageIsOkay($imageFile) {
-
-    $info = getimagesize($imageFile['tmp_name']);
-    if (!$info) {
-        echo "<script>alert('Uploaded file is not a valid image.');</script>";
+    // Ensure a file was actually uploaded
+    if (!isset($imageFile['tmp_name']) || !is_uploaded_file($imageFile['tmp_name'])) {
+        echo "<script>alert('No valid image file uploaded.');</script>";
         return false;
     }
-    //TODO: must revisit aspect ratio checking
+
+    // Get image dimensions and validate
+    $info = @getimagesize($imageFile['tmp_name']);
+    if ($info === false) {
+        echo "<script>
+            alert('Uploaded file is not a valid image.');
+            window.location.href = 'index.php';
+            </script>";
+        return false;
+    }
+
     $width = $info[0];
     $height = $info[1];
     $ratio = $width / $height;
 
+    // Minimum width check
     if ($width < 600) {
-//        echo "<script>alert('Image width must be at least 600px.');</script>";
-//        return false;
+        echo "<script>
+            alert('Image width must be at least 600px.');
+            window.location.href = 'index.php';
+            </script>";
+        return false;
     }
 
-    if ($ratio < 4/3 || $ratio > 16/9) {
-//        echo "<script>alert('Image aspect ratio must be between 4:3 and 16:9.');</script>";
-//        return false;
+    // Aspect ratio check (4:3 - 16:9)
+    if ($ratio < (4/3) || $ratio > (16/9)) {
+        echo "<script>
+            alert('Image aspect ratio must be between 4:3 and 16:9.');
+            window.location.href = 'index.php';
+            </script>";
+        return false;
     }
 
     return true;
@@ -242,11 +249,12 @@ function imageIsOkay($imageFile) {
 </div>
 </body>
 <script>
+    // JS code to save and update the preview
 
     //Variable to store the selected image file
     let uploadedFile = null;
 
-    //Called when a file is selected
+    // When file is selected
     function handleFileSelect(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -254,7 +262,7 @@ function imageIsOkay($imageFile) {
         // Store file in a variable
         uploadedFile = file;
 
-        // Preview updated
+        // Preview updated until "save" clicked
         const preview = document.getElementById('preview');
         preview.src = URL.createObjectURL(file);
     }
