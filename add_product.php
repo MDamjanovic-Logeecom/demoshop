@@ -2,6 +2,10 @@
 /** @var PDO $pdo */
 require 'db_connect.php'; // include db connection
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Capture submitted data
@@ -14,15 +18,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $enabled = isset($_POST['enabled']) ? 1 : 0;
     $featured = isset($_POST['featured']) ? 1 : 0;
     $imageFile = isset($_FILES['image']) ? $_FILES['image'] : null; // Capture uploaded image file if any
-    $price = isset($_POST['price']) ? $_POST['price'] : 0;
+    $price = (float)(isset($_POST['price']) ? $_POST['price'] : 0.0);
 
+    if ($sku == null || $title == null){
+        echo "<script>
+            alert('SKU and Title are required.');
+            window.location.href = 'index.php';
+          </script>";
+    }
 
     if ($imageFile && $imageFile['error'] === UPLOAD_ERR_OK) { // If img uploaded -> check if valid b4 sending to db
         if(imageIsOkay($imageFile)) {
-            $success = addProduct($sku, $title, $brand, $category, $sdescription, $enabled, $imageFile, $ldescription, $price);
+
+            $imageData = file_get_contents($imageFile['tmp_name']);
+
+            $product = new Product($sku, $title, $brand, $category, $sdescription, $ldescription, $price, $imageData, $enabled);
+            $success = addProduct($product);
+
         }
     }else { // If no img upload, nothing to validate
-        $success = addProduct($sku, $title, $brand, $category, $sdescription, $enabled, $imageFile, $ldescription, $price);
+        $product = new Product($sku, $title, $brand, $category, $sdescription, $ldescription, $price, null, $enabled);
+        $success = addProduct($product);
     }
 
     if ($success) {
@@ -32,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </script>";
     } else {
         echo "<script>
-            alert('Error saving product.');
+            alert('Error adding product.');
             window.location.href = 'index.php';
           </script>";
     }

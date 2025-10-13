@@ -5,13 +5,14 @@
 class Product {
     private string $sku;
     private string $title;
-    private string $brand;
+    private ?string $brand;
     private string $category;
     private ?string $shortDescription;
     private ?string $longDescription;
     private float $price;
     private ?string $image;
     private bool $enabled;
+    private bool $featured;
 
     public function __construct(
         string $sku,
@@ -33,6 +34,8 @@ class Product {
         $this->price = $price;
         $this->image = $image;
         $this->enabled = $enabled;
+
+        $this->featured = false;
     }
 
     // Getters
@@ -72,6 +75,10 @@ class Product {
         return $this->enabled;
     }
 
+    public function isFeatured(): bool {
+        return $this->featured;
+    }
+
     // Setters
     public function setTitle(string $title): void {
         $this->title = $title;
@@ -103,6 +110,10 @@ class Product {
 
     public function setEnabled(bool $enabled): void {
         $this->enabled = $enabled;
+    }
+
+    public function setFeatured(bool $featured): void {
+        $this->featured = $featured;
     }
 
 }
