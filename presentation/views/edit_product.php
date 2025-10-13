@@ -6,6 +6,20 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// Fetching product
+if (isset($_GET['sku'])) {
+    //$sku = $_GET['sku'];
+
+    // Fetching product from database
+    $product = getProductBySKU($sku);
+
+    if (!$product) {
+        die("Product not found.");
+    }
+} else {
+    die("No SKU provided.");
+}
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Capture submitted data
@@ -18,14 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $enabled = isset($_POST['enabled']) ? 1 : 0;
     $featured = isset($_POST['featured']) ? 1 : 0;
     $imageFile = isset($_FILES['image']) ? $_FILES['image'] : null; // Capture uploaded image file if any
-    $price = (float)(isset($_POST['price']) ? $_POST['price'] : 0.0);
-
-    if ($sku == null || $title == null){
-        echo "<script>
-            alert('SKU and Title are required.');
-            window.location.href = 'index.php';
-          </script>";
-    }
+    $price = isset($_POST['price']) ? $_POST['price'] : 0;
 
     if ($imageFile && $imageFile['error'] === UPLOAD_ERR_OK) { // If img uploaded -> check if valid b4 sending to db
         if(imageIsOkay($imageFile)) {
@@ -33,30 +40,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $imageData = file_get_contents($imageFile['tmp_name']);
 
             $product = new Product($sku, $title, $brand, $category, $sdescription, $ldescription, $price, $imageData, $enabled);
-            $success = addProduct($product);
-
+            $success = editProduct($product);
         }
     }else { // If no img upload, nothing to validate
         $product = new Product($sku, $title, $brand, $category, $sdescription, $ldescription, $price, null, $enabled);
-        $success = addProduct($product);
+        $success = editProduct($product);
     }
 
     if ($success) {
         echo "<script>
-            alert('Product added successfully.');
-            window.location.href = 'index.php';
+            alert('Product edited successfully.');
+            window.location.href = 'index.php?page=list';
           </script>";
     } else {
         echo "<script>
-            alert('Error adding product.');
-            window.location.href = 'index.php';
+            alert('Error saving product.');
+            window.location.href = 'index.php?page=list';
           </script>";
     }
 
 }
 
 function imageIsOkay($imageFile) {
-    // Ensure a file was actually uploaded
+    // Ensures a file was actually uploaded
     if (!isset($imageFile['tmp_name']) || !is_uploaded_file($imageFile['tmp_name'])) {
         echo "<script>alert('No valid image file uploaded.');</script>";
         return false;
@@ -67,7 +73,7 @@ function imageIsOkay($imageFile) {
     if ($info === false) {
         echo "<script>
             alert('Uploaded file is not a valid image.');
-            window.location.href = 'index.php';
+            window.location.href = 'index.php?page=list';
             </script>";
         return false;
     }
@@ -80,7 +86,7 @@ function imageIsOkay($imageFile) {
     if ($width < 600) {
         echo "<script>
             alert('Image width must be at least 600px.');
-            window.location.href = 'index.php';
+            window.location.href = 'index.php?page=list';
             </script>";
         return false;
     }
@@ -89,7 +95,7 @@ function imageIsOkay($imageFile) {
     if ($ratio < (4/3) || $ratio > (16/9)) {
         echo "<script>
             alert('Image aspect ratio must be between 4:3 and 16:9.');
-            window.location.href = 'index.php';
+            window.location.href = 'index.php?page=list';
             </script>";
         return false;
     }
@@ -193,40 +199,40 @@ function imageIsOkay($imageFile) {
             <div class="left-side">
                 <div class="form-group">
                     <label>SKU:</label>
-                    <input type="text" name="sku" value="">
+                    <input type="text" name="sku" value="<?= htmlspecialchars($product->getSKU()) ?>">
                 </div>
                 <div class="form-group">
                     <label>Title:</label>
-                    <input type="text" name="title" value="">
+                    <input type="text" name="title" value="<?= htmlspecialchars($product->getTitle()) ?>">
                 </div>
                 <div class="form-group">
                     <label>Brand:</label>
-                    <input type="text" name="brand" value="">
+                    <input type="text" name="brand" value="<?= htmlspecialchars($product->getBrand()) ?>">
                 </div>
                 <div class="form-group">
                     <label>Category:</label>
                     <select name="category">
-                        <option value="Laptop" selected>Laptop</option>
+                        <option value="Laptop" <?= $product->getCategory() === 'Laptop' ? 'selected' : '' ?>>Laptop</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Price:</label>
-                    <input type="number" step="0.01" name="price" value="">
+                    <input type="number" step="0.01" name="price" value="<?= htmlspecialchars($product->getPrice()) ?>">
                 </div>
                 <div class="form-group">
                     <label>Short Description:</label>
-                    <textarea name="short_description"> </textarea>
+                    <textarea name="short_description"><?= htmlspecialchars($product->getShortDescription() ?? '') ?></textarea>
                 </div>
                 <div class="form-group">
                     <label>Description:</label>
-                    <textarea name="description"></textarea>
+                    <textarea name="description"><?= htmlspecialchars($product->getLongDescription() ?? '') ?></textarea>
                 </div>
                 <div class="checkbox-group">
-                    <input type="checkbox" name="enabled">
+                    <input type="checkbox" name="enabled" <?= $product->isEnabled() ? 'checked' : '' ?>>
                     <label>Enabled in Shop</label>
                 </div>
                 <div class="checkbox-group">
-                    <input type="checkbox" name="featured">
+                    <input type="checkbox" name="featured" <?= $product->isFeatured() ? 'checked' : '' ?>>
                     <label>Featured</label>
                 </div>
             </div>
@@ -234,7 +240,7 @@ function imageIsOkay($imageFile) {
             <div class="right-side">
                 <!-- Image preview -->
                 <img id="preview"
-                     src="<?= !empty($product['Image']) ? $product['Image'] : 'placeholder.jpg' ?>"
+                     src="<?= !empty($product->getImage()) ? $product->getImage() : 'placeholder.jpg' ?>"
                      alt="Product Image"
                      style="min-width:300px; min-height:300px; display:block; margin-bottom:5px;">
 
@@ -273,5 +279,4 @@ function imageIsOkay($imageFile) {
 
 </script>
 </html>
-
 
