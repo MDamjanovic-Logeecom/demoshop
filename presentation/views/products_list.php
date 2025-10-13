@@ -1,13 +1,17 @@
 <?php
 /** @var PDO $pdo */ // in order for PHPStorm to know that it imports the variable from req file
-require 'db_connect.php';
+//require 'db_connect.php';
+require_once __DIR__ . '/../controllers/ProductController.php';
+require_once __DIR__ . '/../../db_connect.php';
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$products = getAllProducts();
+$controller = new ProductController($pdo);
+$products = $controller->getAllProducts();
 
+//TODO: regulate the deletion - no post's permitted in the view!!!
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_sku'])) {
     $skuToDelete = $_POST['delete_sku'];
     $deleted = deleteProductBySKU($skuToDelete);
