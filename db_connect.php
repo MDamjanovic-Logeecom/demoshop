@@ -20,7 +20,6 @@ $options = [
 
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
-    //echo "Connected to demo_shop database!";
 } catch (PDOException $e) {
     echo "Connection failed: " . $e->getMessage();
 }
