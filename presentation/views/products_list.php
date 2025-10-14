@@ -11,23 +11,6 @@ error_reporting(E_ALL);
 $controller = new ProductController($pdo);
 $products = $controller->getAllProducts();
 
-//TODO: regulate the deletion - no post's permitted in the view!!!
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_sku'])) {
-    $skuToDelete = $_POST['delete_sku'];
-    $deleted = deleteProductBySKU($skuToDelete);
-
-    if ($deleted) {
-        echo "<script>alert('Product deleted successfully.');</script>";
-    } else {
-        echo "<script>alert('Product not found or could not be deleted.');</script>";
-    }
-
-    // Reloading page to refresh the product list
-    header("Location: /index.php?page=list");
-
-    exit;
-}
-
 ?>
 
 <!DOCTYPE html>
@@ -219,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_sku'])) {
                     </form>
                 </td>
                 <td class="button-cell">
-                    <form action="products_list.php" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete <?= htmlspecialchars($product->getTitle()) ?>?');">
+                    <form action="index.php?page=delete" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete <?= htmlspecialchars($product->getTitle()) ?>?');">
                         <input type="hidden" name="delete_sku" value="<?= htmlspecialchars($product->getSKU()) ?>">
                         <button type="submit">Delete</button>
                     </form>

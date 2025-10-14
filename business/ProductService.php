@@ -26,23 +26,82 @@ class ProductService implements IService {
     }
 
     public function deleteBySKU(string $sku): bool {
+        if (empty($sku)) {
+            return false;
+        }
         return $this->repository->deleteBySKU($sku);
     }
 
-    public function create(Product $product): bool {
-        //TODO: image checking and conversion b4 sending to repo
+    public function create(array $formData, $imageFile): bool {
+        // Handle form submission
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Capture submitted data
+            $sku = isset($_POST['sku']) ? $_POST['sku'] : ''; // isset: if the field exists, use the value; if not -> use ''
+            $title = isset($_POST['title']) ? $_POST['title'] : '';
+            $brand = isset($_POST['brand']) ? $_POST['brand'] : '';
+            $category = isset($_POST['category']) ? $_POST['category'] : '';
+            $sdescription = isset($_POST['short_description']) ? $_POST['short_description'] : '';
+            $ldescription = isset($_POST['description']) ? $_POST['description'] : '';
+            $enabled = isset($_POST['enabled']) ? 1 : 0;
+            $featured = isset($_POST['featured']) ? 1 : 0;
+            $imageFile = isset($_FILES['image']) ? $_FILES['image'] : null; // Capture uploaded image file if any
+            $price = (float)(isset($_POST['price']) ? $_POST['price'] : 0.0);
 
-        return $this->repository->create($product);
+            if ($sku == null || $title == null){
+                echo "<script>
+                    alert('SKU and Title are required.');
+                    window.location.href = 'index.php?page=list';
+                  </script>";
+            }
+
+            if ($imageFile && $imageFile['error'] === UPLOAD_ERR_OK) { // If img uploaded -> check if valid b4 sending to db
+                if($this->imageIsOkay($imageFile)) {
+
+                    $imageData = file_get_contents($imageFile['tmp_name']);
+
+                    $product = new Product($sku, $title, $brand, $category, $sdescription, $ldescription, $price, $imageData, $enabled);
+                    return $this->repository->create($product);
+
+                }
+            }else { // If no img upload, nothing to validate
+                $product = new Product($sku, $title, $brand, $category, $sdescription, $ldescription, $price, null, $enabled);
+                return $this->repository->create($product);
+            }
+        }
+        return false;
     }
 
-    public function update(Product $product): bool {
-        //TODO: image checking and conversion b4 sending to repo
-        return $this->repository->update($product);
+    public function update(array $formData, ?array $imageFile): bool {
+        //Capture submitted data
+        $sku = isset($_POST['sku']) ? $_POST['sku'] : ''; // isset: if the field exists, use the value; if not -> use ''
+        $title = isset($_POST['title']) ? $_POST['title'] : '';
+        $brand = isset($_POST['brand']) ? $_POST['brand'] : '';
+        $category = isset($_POST['category']) ? $_POST['category'] : '';
+        $sdescription = isset($_POST['short_description']) ? $_POST['short_description'] : '';
+        $ldescription = isset($_POST['description']) ? $_POST['description'] : '';
+        $enabled = isset($_POST['enabled']) ? 1 : 0;
+        $featured = isset($_POST['featured']) ? 1 : 0;
+        $imageFile = isset($_FILES['image']) ? $_FILES['image'] : null; // Capture uploaded image file if any
+        $price = isset($_POST['price']) ? $_POST['price'] : 0;
+
+        if ($imageFile && $imageFile['error'] === UPLOAD_ERR_OK) { // If img uploaded -> check if valid b4 sending to db
+            if($this->imageIsOkay($imageFile)) {
+
+                $imageData = file_get_contents($imageFile['tmp_name']);
+
+                $product = new Product($sku, $title, $brand, $category, $sdescription, $ldescription, $price, $imageData, $enabled);
+                return $this->repository->update($product);
+            }
+        }else { // If no img upload, nothing to validate
+            $product = new Product($sku, $title, $brand, $category, $sdescription, $ldescription, $price, null, $enabled);
+            return $this->repository->update($product);
+        }
+        return false;
     }
 
     //-----------------------------------------------------------Helper functions:
-    //TODO: use this probably for the image validation during upload!
-    function imageIsOkay($imageFile) {
+
+    function imageIsOkay($imageFile): bool {
         // Ensure a file was actually uploaded
         if (!isset($imageFile['tmp_name']) || !is_uploaded_file($imageFile['tmp_name'])) {
             echo "<script>alert('No valid image file uploaded.');</script>";

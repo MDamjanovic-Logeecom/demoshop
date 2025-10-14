@@ -9,15 +9,13 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 class ProductRepository implements IRepository {
-    //TODO: PDO is going to have to be gifted through the db_connect file
     private PDO $pdo;
-    //TODO: test all of this, buddy-boii (THROUGH SERVICE!)
 
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
     }
 
-    // TODO: Get all products
+    // Get all products
     public function getAll(): array {
         $products = [];
 
@@ -61,7 +59,7 @@ class ProductRepository implements IRepository {
         return $products;
     }
 
-    // TODO: Get single product by SKU
+    // Get single product by SKU
     public function getBySKU(string $sku) : Product {
 
         $stmt = $this->pdo->prepare("SELECT * FROM products WHERE SKU = :sku");
@@ -114,7 +112,7 @@ class ProductRepository implements IRepository {
         }
     }
 
-    // TODO: Update Product by SKU
+    // Update Product by SKU
     public function update(Product $product): bool {
 
         try {
@@ -175,7 +173,7 @@ class ProductRepository implements IRepository {
         }
     }
 
-    // TODO: Create new product
+    // Create new product
     public function create(Product $product): bool {
 
         try {
