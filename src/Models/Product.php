@@ -1,8 +1,7 @@
 <?php
 
-//namespace models;
-
-class Product {
+class Product
+{
     private string $sku;
     private string $title;
     private ?string $brand;
@@ -39,80 +38,99 @@ class Product {
     }
 
     // Getters
-    public function getSKU(): string {
+    public function getSKU(): string
+    {
         return $this->sku;
     }
 
-    public function getTitle(): string {
+    public function getTitle(): string
+    {
         return $this->title;
     }
 
-    public function getBrand(): string {
+    public function getBrand(): string
+    {
         return $this->brand;
     }
 
-    public function getCategory(): string {
+    public function getCategory(): string
+    {
         return $this->category;
     }
 
-    public function getShortDescription(): ?string {
+    public function getShortDescription(): ?string
+    {
         return $this->shortDescription;
     }
 
-    public function getLongDescription(): ?string {
+    public function getLongDescription(): ?string
+    {
         return $this->longDescription;
     }
 
-    public function getPrice(): float {
+    public function getPrice(): float
+    {
         return $this->price;
     }
 
-    public function getImage(): ?string {
+    public function getImage(): ?string
+    {
         return $this->image;
     }
 
-    public function isEnabled(): bool {
+    public function isEnabled(): bool
+    {
         return $this->enabled;
     }
 
-    public function isFeatured(): bool {
+    public function isFeatured(): bool
+    {
         return $this->featured;
     }
 
     // Setters
-    public function setTitle(string $title): void {
+    public function setTitle(string $title): void
+    {
         $this->title = $title;
     }
 
-    public function setBrand(string $brand): void {
+    public function setBrand(string $brand): void
+    {
         $this->brand = $brand;
     }
 
-    public function setCategory(string $category): void {
+    public function setCategory(string $category): void
+    {
         $this->category = $category;
     }
 
-    public function setShortDescription(?string $desc): void {
+    public function setShortDescription(?string $desc): void
+    {
         $this->shortDescription = $desc;
     }
 
-    public function setLongDescription(?string $desc): void {
+    public function setLongDescription(?string $desc): void
+    {
         $this->longDescription = $desc;
     }
 
-    public function setPrice(float $price): void {
+    public function setPrice(float $price): void
+    {
         $this->price = $price;
     }
 
-    public function setImage(?string $image): void {
+    public function setImage(?string $image): void
+    {
         $this->image = $image;
     }
 
-    public function setEnabled(bool $enabled): void {
+    public function setEnabled(bool $enabled): void
+    {
         $this->enabled = $enabled;
     }
 
-    public function setFeatured(bool $featured): void {
+    public function setFeatured(bool $featured): void
+    {
         $this->featured = $featured;
     }
 

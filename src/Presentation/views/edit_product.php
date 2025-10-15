@@ -1,7 +1,5 @@
 <?php
-/** @var Product $product */ // Controller passes the product (bc of it requiring this page -> this page is part of its scope)
-/** @var PDO $pdo */
-require 'db_connect.php'; // include db connection
+/** @var $product */
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -14,7 +12,7 @@ error_reporting(E_ALL);
 <head>
     <meta charset="UTF-8">
     <title>Edit Product</title>
-    <link rel="stylesheet" href="/presentation/public/css/add_product.css">
+    <link rel="stylesheet" href="css/add_product.css">
 </head>
 <body>
 <div class="container">
@@ -24,8 +22,8 @@ error_reporting(E_ALL);
             <div class="left-side">
                 <div class="form-group">
                     <label>SKU:</label>
-                    <input type="text" name="sku" value="<?= htmlspecialchars($product->getSKU()) ?>">
-                </div>
+                    <input type="text" name="sku" value="<?= htmlspecialchars($product->getSKU()) ?>">  <!-- It's red, but it autoloaded and works. -->
+                </div>                                                                                  <!-- I'll add the @var at the top for now..' -->
                 <div class="form-group">
                     <label>Title:</label>
                     <input type="text" name="title" value="<?= htmlspecialchars($product->getTitle()) ?>">
@@ -37,7 +35,8 @@ error_reporting(E_ALL);
                 <div class="form-group">
                     <label>Category:</label>
                     <select name="category">
-                        <option value="Laptop" <?= $product->getCategory() === 'Laptop' ? 'selected' : '' ?>>Laptop</option>
+                        <option value="Laptop" <?= $product->getCategory() === 'Laptop' ? 'selected' : '' ?>>Laptop
+                        </option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -46,11 +45,13 @@ error_reporting(E_ALL);
                 </div>
                 <div class="form-group">
                     <label>Short Description:</label>
-                    <textarea name="short_description"><?= htmlspecialchars($product->getShortDescription() ?? '') ?></textarea>
+                    <textarea
+                            name="short_description"><?= htmlspecialchars($product->getShortDescription() ?? '') ?></textarea>
                 </div>
                 <div class="form-group">
                     <label>Description:</label>
-                    <textarea name="description"><?= htmlspecialchars($product->getLongDescription() ?? '') ?></textarea>
+                    <textarea
+                            name="description"><?= htmlspecialchars($product->getLongDescription() ?? '') ?></textarea>
                 </div>
                 <div class="checkbox-group">
                     <input type="checkbox" name="enabled" <?= $product->isEnabled() ? 'checked' : '' ?>>
@@ -70,11 +71,10 @@ error_reporting(E_ALL);
                      style="min-width:300px; min-height:300px; display:block; margin-bottom:5px;">
 
                 <!-- Hidden file input -->
-                <input type="file" id="file" name="image" style="display:none;" accept="image/*" onchange="handleFileSelect(event)">
+                <input type="file" id="file" name="image" style="display:none;" accept="image/*"
+                       onchange="handleFileSelect(event)">
 
-                <button type="button" onclick="document.getElementById('file').click();">
-                    Upload
-                </button>
+                <button type="button" onclick="triggerFileInput('file')"> Upload</button>
             </div>
         </div>
         <div class="right-side" style=" text-align: right;">
@@ -82,26 +82,7 @@ error_reporting(E_ALL);
         </div>
     </form>
 </div>
+<script src="js/add_edit_form.js"></script>
 </body>
-<script>
-    // JS code to save and update the preview
-
-    //Variable to store the selected image file
-    let uploadedFile = null;
-
-    // When file is selected
-    function handleFileSelect(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        // Store file in a variable
-        uploadedFile = file;
-
-        // Preview updated until "save" clicked
-        const preview = document.getElementById('preview');
-        preview.src = URL.createObjectURL(file);
-    }
-
-</script>
 </html>
 

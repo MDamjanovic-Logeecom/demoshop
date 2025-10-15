@@ -1,6 +1,4 @@
 <?php
-/** @var PDO $pdo */
-require 'db_connect.php'; // include db connection
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -13,7 +11,7 @@ error_reporting(E_ALL);
 <head>
     <meta charset="UTF-8">
     <title>Edit Product</title>
-    <link rel="stylesheet" href="/presentation/public/css/add_product.css">
+    <link rel="stylesheet" href="css/add_product.css">
 </head>
 <body>
 <div class="container">
@@ -69,11 +67,10 @@ error_reporting(E_ALL);
                      style="min-width:300px; min-height:300px; display:block; margin-bottom:5px;">
 
                 <!-- Hidden file input -->
-                <input type="file" id="file" name="image" style="display:none;" accept="image/*" onchange="handleFileSelect(event)">
+                <input type="file" id="file" name="image" style="display:none;" accept="image/*"
+                       onchange="handleFileSelect(event)">
 
-                <button type="button" onclick="document.getElementById('file').click();">
-                    Upload
-                </button>
+                <button type="button" onclick="triggerFileInput('file')"> Upload</button>
             </div>
         </div>
         <div class="right-side" style=" text-align: right;">
@@ -81,27 +78,8 @@ error_reporting(E_ALL);
         </div>
     </form>
 </div>
+<script src="js/add_edit_form.js"></script>
 </body>
-<script>
-    // JS code to save and update the preview
-
-    //Variable to store the selected image file
-    let uploadedFile = null;
-
-    // When file is selected
-    function handleFileSelect(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        // Store file in a variable
-        uploadedFile = file;
-
-        // Preview updated until "save" clicked
-        const preview = document.getElementById('preview');
-        preview.src = URL.createObjectURL(file);
-    }
-
-</script>
 </html>
 
 

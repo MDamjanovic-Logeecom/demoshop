@@ -1,14 +1,10 @@
 <?php
-/** @var PDO $pdo */ // in order for PHPStorm to know that it imports the variable from req file
-//require 'db_connect.php';
-require_once __DIR__ . '/../controllers/ProductController.php';
-require_once __DIR__ . '/../../db_connect.php';
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$controller = new ProductController($pdo);
+$controller = new ProductController();
 $products = $controller->getAllProducts();
 
 ?>
@@ -18,7 +14,7 @@ $products = $controller->getAllProducts();
 <head>
     <meta charset="UTF-8">
     <title>Demo Shop - Main Page</title>
-    <link rel="stylesheet" href="/presentation/public/css/products_list.css">
+    <link rel="stylesheet" href="css/products_list.css">
 </head>
 <body>
 
@@ -60,8 +56,8 @@ $products = $controller->getAllProducts();
                 <th>Short description</th>
                 <th>Price</th>
                 <th>Enabled</th>
-                <th>     </th>
-                <th>     </th>
+                <th></th>
+                <th></th>
             </tr>
             </thead>
             <tbody>
@@ -91,7 +87,8 @@ $products = $controller->getAllProducts();
                     </form>
                 </td>
                 <td class="button-cell">
-                    <form action="index.php?page=delete" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete <?= htmlspecialchars($product->getTitle()) ?>?');">
+                    <form action="index.php?page=delete" method="post" style="display:inline;"
+                          onsubmit="return confirm('Are you sure you want to delete <?= htmlspecialchars($product->getTitle()) ?>?');">
                         <input type="hidden" name="delete_sku" value="<?= htmlspecialchars($product->getSKU()) ?>">
                         <button type="submit">Delete</button>
                     </form>
@@ -111,6 +108,6 @@ $products = $controller->getAllProducts();
         </div>
     </div>
 </div>
-
+<script src="js/message.js"></script>
 </body>
 </html>

@@ -1,25 +1,43 @@
 <?php
 
-require_once __DIR__ . '/IRepository.php';
-require_once __DIR__ . '/../models/Product.php';
-require_once __DIR__ . '/../db_connect.php';
-
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-class ProductRepository implements IRepository {
+class ProductRepository implements IRepository
+{
     private PDO $pdo;
 
-    public function __construct(PDO $pdo) {
-        $this->pdo = $pdo;
+    public function __construct()
+    {
+        //Database configuration
+        $host = 'localhost';    // MySQL server on windows from WSL
+        $db = 'milos';          // DB name
+        $user = 'root';         // MySQL user
+        $pass = 'root';         // user password
+        $charset = 'utf8mb4';
+
+        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+
+        $options = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ];
+
+        try {
+            $this->pdo = new PDO($dsn, $user, $pass, $options);
+        } catch (PDOException $e) {
+            die("Database connection failed: " . $e->getMessage());
+        }
     }
 
     // Get all products
-    public function getAll(): array {
+    public function getAll(): array
+    {
         $products = [];
 
-        try{
+        try {
             $stmt = $this->pdo->query("SELECT * FROM products");
 
             while ($row = $stmt->fetch()) {
@@ -33,7 +51,7 @@ class ProductRepository implements IRepository {
                     $imageData = "data:image/jpeg;base64," . $base64;
                 }
 
-                $sku   = isset($row['SKU']) ? (string)$row['SKU'] : '';
+                $sku = isset($row['SKU']) ? (string)$row['SKU'] : '';
                 $title = isset($row['Title']) ? (string)$row['Title'] : '';
                 $brand = isset($row['Brand']) ? (string)$row['Brand'] : '';
                 $category = isset($row['Category']) ? (string)$row['Category'] : '';
@@ -42,10 +60,10 @@ class ProductRepository implements IRepository {
                 $price = isset($row['Price']) ? (float)$row['Price'] : 0.0;
                 $enabled = isset($row['Enabled']) ? (bool)$row['Enabled'] : false;
 
-                //$product = new Product();
                 try {
-                    $product = new Product($sku, $title, $brand, $category, $sdesc, $ldesc, $price, $imageData, $enabled);
-                }catch (Exception $e) {
+                    $product = new Product($sku, $title, $brand, $category, $sdesc, $ldesc, $price, $imageData,
+                        $enabled);
+                } catch (Exception $e) {
                     echo $e->getMessage();
                 }
 
@@ -60,7 +78,8 @@ class ProductRepository implements IRepository {
     }
 
     // Get single product by SKU
-    public function getBySKU(string $sku) : Product {
+    public function getBySKU(string $sku): Product
+    {
 
         $stmt = $this->pdo->prepare("SELECT * FROM products WHERE SKU = :sku");
         $stmt->bindParam(':sku', $sku);
@@ -78,7 +97,7 @@ class ProductRepository implements IRepository {
             $imageData = "data:image/jpeg;base64," . base64_encode($row['Image']);
         }
 
-        $sku   = isset($row['SKU']) ? (string)$row['SKU'] : '';
+        $sku = isset($row['SKU']) ? (string)$row['SKU'] : '';
         $title = isset($row['Title']) ? (string)$row['Title'] : '';
         $brand = isset($row['Brand']) ? (string)$row['Brand'] : '';
         $category = isset($row['Category']) ? (string)$row['Category'] : '';
@@ -93,7 +112,8 @@ class ProductRepository implements IRepository {
     }
 
     // Delete product by SKU
-    public function deleteBySKU(string $sku): bool {
+    public function deleteBySKU(string $sku): bool
+    {
 
         try {
             $stmt = $this->pdo->prepare("DELETE FROM products WHERE SKU = :sku");
@@ -113,7 +133,8 @@ class ProductRepository implements IRepository {
     }
 
     // Update Product by SKU
-    public function update(Product $product): bool {
+    public function update(Product $product): bool
+    {
 
         try {
             // Base SQL query (without image yet)
@@ -174,7 +195,8 @@ class ProductRepository implements IRepository {
     }
 
     // Create new product
-    public function create(Product $product): bool {
+    public function create(Product $product): bool
+    {
 
         try {
             // Base SQL query
