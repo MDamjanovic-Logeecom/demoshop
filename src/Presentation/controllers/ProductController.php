@@ -15,78 +15,107 @@ class ProductController
     }
 
     //------------------------------------------------------------------------------------ Data (service) calls:
-
-    public function getAllProducts(): array
+    //TODO Retrieves all products
+//    public function getAllProducts(): array
+//    {
+//
+//        return $this->service->getAll();
+//    }
+    public function getAllProducts(HttpRequestClass $request): HttpResponseClass
     {
+        $products = $this->service->getAll();
 
-        return $this->service->getAll();
+        $response = new HttpResponseClass();
+        $response->setStatusCode(200);
+        $response->setBody([
+            'view' => 'products_list.php',
+            'products' => $products
+        ]);
+
+        return $response;
     }
 
-    public function deleteProductBySKU(): void
+    //Deletes product
+    public function deleteProductBySKU(HttpRequestClass $request): HttpResponseClass
     {
-        $wrapper = new Wrapper();
+        $response = new HttpResponseClass();
 
-        if ($wrapper->getServer('REQUEST_METHOD') === 'POST' && $wrapper->getPost('delete_sku') !== null) { // Received sku through hidden parameter
-            $sku = $wrapper->getPost('delete_sku');
-            $deleted = $this->service->deleteBySKU($sku);
+        if ($request->isPost() && $request->getPost('delete_sku') !== null) {
+            $sku = $request->getPost('delete_sku');
+            $deleted = $this->service->deleteBySKU($sku); // Asking service to delete
 
             $status = $deleted ? 'success' : 'error';
             $message = $deleted ? 'Product deleted successfully' : 'Failed to delete product';
 
-            // A redirect with message in URL (will be cleared in message.js)
-            header("Location: /index.php?page=list&status={$status}&message=" . urlencode($message));
-            exit;
+            // Redirect using HttpResponseClass with message in URL (will be cleared in message.js)
+            $response->setStatusCode(302);
+            $response->setHeader('Location', "/index.php?page=list&status={$status}&message=" . urlencode($message));
+        } else {
+            // If request method is not POST
+            $response->setStatusCode(405);
         }
+
+        return $response;
     }
 
-    public function editProduct(): void
+    // Edits products
+    public function editProduct(HttpRequestClass $request): HttpResponseClass
     {
-        $wrapper = new Wrapper();
+        $imageFile = $request->getFiles('image') ?? null;
 
-        if ($wrapper->getServer('REQUEST_METHOD') === 'POST') {
-            $imageFile = $wrapper->getFiles('image') ?? null;
+        $success = $this->service->update($request->getPostArray(), $imageFile); // Asks service to update product
 
-            $success = $this->service->update($wrapper->getPostObj(), $imageFile);
+        $status = $success ? 'success' : 'error';
+        $message = $success ? 'Product edited successfully.' : 'Failed to edit product.'; // For displaying alerts
 
-            $status = $success ? 'success' : 'error';
-            $message = $success ? 'Product edited successfully.' : 'Failed to edit product.';
+        $response = new HttpResponseClass();
+        $response->setStatusCode(302); // redirect after POST
+        $response->setHeader('Location', "/index.php?page=list&status={$status}&message=" . urlencode($message));
 
-            header("Location: /index.php?page=list&status={$status}&message=" . urlencode($message));
-        }
-    }
-
-    public function addProduct(): void
-    {
-        $wrapper = new Wrapper();
-
-        if ($wrapper->getServer('REQUEST_METHOD') === 'POST') {
-            $imageFile = $wrapper->getFiles('image') ?? null;
-
-            $success = $this->service->create($wrapper->getPostObj(), $imageFile);
-
-            $status = $success ? 'success' : 'error';
-            $message = $success ? 'Product added successfully.' : 'Failed to add product.';
-
-            header("Location: /index.php?page=list&status={$status}&message=" . urlencode($message));
-        }
+        return $response;
     }
 
 
-    //------------------------------------------------------------------------------------- Other operations:
-
-    public function showEditForm(?string $sku): void
+    // Creates new product
+    public function addProduct(HttpRequestClass $request): HttpResponseClass
     {
+        $imageFile = $request->getFiles('image') ?? null;
+        $success = $this->service->create($request->getPostArray(), $imageFile); // Asks service to add new product
+
+        $status = $success ? 'success' : 'error';
+        $message = $success ? 'Product added successfully.' : 'Failed to add product.'; // For displaying alerts
+
+        $response = new HttpResponseClass();
+        $response->setStatusCode(302); // 302 = redirect
+        $response->setHeader('Location', "/index.php?page=list&status={$status}&message=" . urlencode($message));
+
+        return $response;
+    }
+
+    //Retrieves product by sku, redirects to the edit form for set product
+    public function showEditForm(?string $sku): HttpResponseClass
+    {
+        $response = new HttpResponseClass();
+
         if (!$sku) {
-            die("No SKU provided.");
+            $response->setStatusCode(400);
+            $response->setBody('No SKU provided.');
+            return $response;
         }
 
         $product = $this->service->getBySKU($sku);
-        if (!$product) { // sanity check
-            die("Product not found.");
+
+        if (!$product) {
+            $response->setStatusCode(404);
+            $response->setBody('Product not found.');
+            return $response;
         }
 
-        // Pass $product to the view (this page officially part of this class' scope and can reach any variable here)
-        require __DIR__ . '/../views/edit_product.php';
-    }
+        // Instead of rendering directly, the product is stored in response content
+        // which can be later used by the index file
+        $response->setStatusCode(200);
+        $response->setBody(['view' => 'edit_product.php', 'product' => $product]);
 
+        return $response;
+    }
 }
