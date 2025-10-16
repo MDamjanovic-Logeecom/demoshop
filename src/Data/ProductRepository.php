@@ -1,13 +1,25 @@
 <?php
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
+/**
+ * Class ProductRepository
+ *
+ * Handles database operations related to products.
+ * Implements the IRepository interface for CRUD operations.
+ */
 class ProductRepository implements IRepository
 {
+    /**
+     * @var PDO The PDO instance for database connection.
+     */
     private PDO $pdo;
 
+    /**
+     * ProductRepository constructor.
+     *
+     * Establishes a connection to the MySQL database using PDO.
+     * Configuration details (host, database, user, password, charset) are defined here.
+     * Throws an exception and stops execution if the connection fails.
+     */
     public function __construct()
     {
         //Database configuration
@@ -28,11 +40,18 @@ class ProductRepository implements IRepository
         try {
             $this->pdo = new PDO($dsn, $user, $pass, $options);
         } catch (PDOException $e) {
-            die("Database connection failed: " . $e->getMessage());
+            die('Database connection failed: ' . $e->getMessage());
         }
     }
 
-    // Get all products
+    /**
+     * Get all products from the database.
+     *
+     * Retrieves all rows from the 'products' table and converts them into Product objects.
+     * If the 'Image' column contains binary data (BLOB), it is converted to base64.
+     *
+     * @return Product[] Array of Product objects.
+     */
     public function getAll(): array
     {
         $products = [];
@@ -77,10 +96,17 @@ class ProductRepository implements IRepository
         return $products;
     }
 
-    // Get single product by SKU
+    /**
+     * Get a single product by its SKU.
+     *
+     * Fetches one product row from the database matching the given SKU and converts it into a Product object.
+     * Handles missing fields and converts the 'Image' column from BLOB to base64 if present.
+     *
+     * @param string $sku SKU of the product to fetch.
+     * @return Product The product object corresponding to the given SKU.
+     */
     public function getBySKU(string $sku): Product
     {
-
         $stmt = $this->pdo->prepare("SELECT * FROM products WHERE SKU = :sku");
         $stmt->bindParam(':sku', $sku);
         $stmt->execute();
@@ -111,31 +137,37 @@ class ProductRepository implements IRepository
         return $product;
     }
 
-    // Delete product by SKU
+    /**
+     * Delete a product from the database by its SKU.
+     *
+     * @param string $sku SKU of the product to delete.
+     * @return bool True if the product was deleted, false on failure or if not found.
+     */
     public function deleteBySKU(string $sku): bool
     {
-
         try {
             $stmt = $this->pdo->prepare("DELETE FROM products WHERE SKU = :sku");
             $stmt->bindParam(':sku', $sku);
             $stmt->execute();
 
             // Check if any row was affected
-            if ($stmt->rowCount() > 0) {
-                return true; // Successfully deleted
-            } else {
-                return false; // SKU not found
-            }
+            return $stmt->rowCount() > 0; // Returns boolean directly without if-else
+
         } catch (PDOException $e) {
             echo "Delete failed: " . $e->getMessage();
+
             return false;
         }
     }
 
-    // Update Product by SKU
+    /**
+     * Update an existing product in the database.
+     *
+     * @param Product $product The product object containing updated data.
+     * @return bool True if update succeeds, false if an exception occurs.
+     */
     public function update(Product $product): bool
     {
-
         try {
             // Base SQL query (without image yet)
             $sql = "UPDATE products
@@ -153,32 +185,16 @@ class ProductRepository implements IRepository
                 ':category' => $product->getCategory(),
                 ':sdescription' => $product->getShortDescription(),
                 ':ldescription' => $product->getLongDescription(),
-                ':enabled' => $product->isEnabled(),
+                ':enabled' => (int)$product->isEnabled(),
                 ':sku' => $product->getSku(),
                 ':price' => $product->getPrice()
             ];
 
-            $imageFile = $product->getImage();
+            $imageData = $product->getImage(); // already binary or null
 
-            // Checking if image is uploaded, already there of empty
-            if ($imageFile) {
-                if (strpos($imageFile, 'data:image') === 0) {
-                    // Base64 image -> image already exists, no upload
-                    [$meta, $base64] = explode(',', $imageFile);
-                    $imageData = base64_decode($base64);
-
-                } elseif (isset($_FILES['image']['tmp_name']) && is_uploaded_file($_FILES['image']['tmp_name'])) {
-                    // New uploaded image
-                    $imageData = file_get_contents($_FILES['image']['tmp_name']);
-
-                } else {
-                    $imageData = null;
-                }
-
-                if ($imageData !== null) {
-                    $sql .= ", Image = :image";
-                    $params[':image'] = $imageData;
-                }
+            if ($imageData !== null) {
+                $sql .= ", Image = :image";
+                $params[':image'] = $imageData;
             }
 
             $sql .= " WHERE SKU = :sku";
@@ -190,14 +206,19 @@ class ProductRepository implements IRepository
 
         } catch (PDOException $e) {
             echo "Update failed: " . $e->getMessage();
+
             return false;
         }
     }
 
-    // Create new product
+    /**
+     * Insert a new product into the database.
+     *
+     * @param Product $product The product object to insert.
+     * @return bool True on success, false on failure.
+     */
     public function create(Product $product): bool
     {
-
         try {
             // Base SQL query
             $sql = "INSERT INTO products (SKU, Title, Brand, Category, Dscrptn, LDscrptn, Enabled, Price";
@@ -213,8 +234,6 @@ class ProductRepository implements IRepository
                 ':enabled' => (int)$product->isEnabled(),
                 ':price' => $product->getPrice()
             ];
-
-            $image = $product->getImage();
 
             // If image is uploaded, convert to BLOB and include in SQL
             if (isset($_FILES['image']['tmp_name']) && is_uploaded_file($_FILES['image']['tmp_name'])) {
@@ -234,8 +253,10 @@ class ProductRepository implements IRepository
             $stmt->execute($params);
 
             return true;
+
         } catch (PDOException $e) {
             echo "Insert failed: " . $e->getMessage();
+
             return false;
         }
     }

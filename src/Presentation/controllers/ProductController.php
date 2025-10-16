@@ -1,13 +1,23 @@
 <?php
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
+/**
+ * Class ProductController
+ *
+ * Handles HTTP requests related to products.
+ * Uses ProductService for business logic and returns HttpResponseClass objects.
+ */
 class ProductController
 {
+    /**
+     * @var ProductService Service layer for product-related operations
+     */
     private ProductService $service;
 
+    /**
+     * ProductController constructor.
+     *
+     * Initializes the ProductService with its repository.
+     */
     public function __construct()
     {
         $repository = new ProductRepository();
@@ -15,12 +25,13 @@ class ProductController
     }
 
     //------------------------------------------------------------------------------------ Data (service) calls:
-    //TODO Retrieves all products
-//    public function getAllProducts(): array
-//    {
-//
-//        return $this->service->getAll();
-//    }
+
+    /**
+     * Retrieve all products and prepare HTTP response with products_list view.
+     *
+     * @param HttpRequestClass $request HTTP request object
+     * @return HttpResponseClass Response containing status, headers, and view with data
+     */
     public function getAllProducts(HttpRequestClass $request): HttpResponseClass
     {
         $products = $this->service->getAll();
@@ -35,30 +46,45 @@ class ProductController
         return $response;
     }
 
-    //Deletes product
+    /**
+     * Deletes a product based on the SKU received via POST request.
+     *
+     * @param HttpRequestClass $request The HTTP request object containing POST data
+     * @return HttpResponseClass HTTP response indicating the result of the deletion.
+     *                             - 302 Redirect on success/failure with status message in URL
+     *                             - 405 Method Not Allowed if request is not POST or delete_sku not provided
+     */
     public function deleteProductBySKU(HttpRequestClass $request): HttpResponseClass
     {
         $response = new HttpResponseClass();
 
-        if ($request->isPost() && $request->getPost('delete_sku') !== null) {
-            $sku = $request->getPost('delete_sku');
-            $deleted = $this->service->deleteBySKU($sku); // Asking service to delete
+        if (!$request->isPost() || $request->getPost('delete_sku') === null) {
+            $response->setStatusCode(405); // If request method is not POST (S.C. method not allowed)
 
-            $status = $deleted ? 'success' : 'error';
-            $message = $deleted ? 'Product deleted successfully' : 'Failed to delete product';
-
-            // Redirect using HttpResponseClass with message in URL (will be cleared in message.js)
-            $response->setStatusCode(302);
-            $response->setHeader('Location', "/index.php?page=list&status={$status}&message=" . urlencode($message));
-        } else {
-            // If request method is not POST
-            $response->setStatusCode(405);
+            return $response;
         }
+
+        // If request is POST
+        $sku = $request->getPost('delete_sku');
+        $deleted = $this->service->deleteBySKU($sku); // Asking service to delete
+
+        $status = $deleted ? 'success' : 'error';
+        $message = $deleted ? 'Product deleted successfully' : 'Failed to delete product';
+
+        // Redirect using HttpResponseClass with message in URL (will be cleared in message.js)
+        $response->setStatusCode(302);
+        $response->setHeader('Location', "/index.php?page=list&status={$status}&message=" . urlencode($message));
 
         return $response;
     }
 
-    // Edits products
+    /**
+     * Updates an existing product with the submitted POST data and optional uploaded image.
+     *
+     * @param HttpRequestClass $request The HTTP request object containing POST data and files
+     * @return HttpResponseClass HTTP response indicating the result of the edit.
+     *                             - 302 Redirect after POST with status message in URL
+     */
     public function editProduct(HttpRequestClass $request): HttpResponseClass
     {
         $imageFile = $request->getFiles('image') ?? null;
@@ -75,8 +101,13 @@ class ProductController
         return $response;
     }
 
-
-    // Creates new product
+    /**
+     * Creates a new product using submitted POST data and optional uploaded image.
+     *
+     * @param HttpRequestClass $request The HTTP request object containing POST data and uploaded files
+     * @return HttpResponseClass HTTP response object for redirection after creation
+     *                             - 302 Redirect with status message in URL
+     */
     public function addProduct(HttpRequestClass $request): HttpResponseClass
     {
         $imageFile = $request->getFiles('image') ?? null;
@@ -92,7 +123,18 @@ class ProductController
         return $response;
     }
 
-    //Retrieves product by sku, redirects to the edit form for set product
+    /**
+     * Prepares the response for the display of the edit product form.
+     *
+     * Fetches the product by SKU. Does not render the form view directly.
+     * Instead, the product data and view filename are stored in the response body.
+     *
+     * @param string|null $sku The SKU of the product to edit; nullable for safety
+     * @return HttpResponseClass The HTTP response object containing:
+     *                            - 200 OK status and view data if product exists
+     *                            - 400 Bad Request status if SKU is missing
+     *                            - 404 Not Found if product is not found
+     */
     public function showEditForm(?string $sku): HttpResponseClass
     {
         $response = new HttpResponseClass();
@@ -100,6 +142,7 @@ class ProductController
         if (!$sku) {
             $response->setStatusCode(400);
             $response->setBody('No SKU provided.');
+
             return $response;
         }
 
@@ -108,6 +151,7 @@ class ProductController
         if (!$product) {
             $response->setStatusCode(404);
             $response->setBody('Product not found.');
+
             return $response;
         }
 

@@ -1,15 +1,52 @@
 <?php
-
+/**
+ * Interface IService
+ *
+ * Defines the contract for service classes handling product operations.
+ * Any class implementing this interface must provide methods for
+ * CRUD operations on products.
+ */
 interface IService
 {
-    public function getAll();
+    /**
+     * Retrieve all products.
+     *
+     * @return array An array of Product objects.
+     */
+    public function getAll(): array;
 
-    public function getBySKU(string $sku);
+    /**
+     * Retrieve a product by its SKU.
+     *
+     * @param string $sku The SKU of the product to retrieve.
+     * @return Product The product object corresponding to the SKU.
+     */
+    public function getBySKU(string $sku): Product;
 
+    /**
+     * Delete a product by its SKU.
+     *
+     * @param string $sku The SKU of the product to delete.
+     * @return bool True if the product was deleted, false otherwise.
+     */
     public function deleteBySKU(string $sku): bool;
 
-    public function create(array $formData, $imageFile): bool;
+    /**
+     * Create a new product.
+     *
+     * @param array $formData Array of form data representing the product fields.
+     * @param array|null $imageFile Optional uploaded image file.
+     * @return bool True on success, false on failure.
+     */
+    public function create(array $formData, mixed $imageFile): bool;
 
+    /**
+     * Update an existing product.
+     *
+     * @param array $formData Array of form data representing the updated product fields.
+     * @param array|null $imageFile Optional uploaded image file.
+     * @return bool True on success, false on failure.
+     */
     public function update(array $formData, ?array $imageFile): bool;
 
 }
