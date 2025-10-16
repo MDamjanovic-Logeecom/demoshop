@@ -1,4 +1,7 @@
 <?php
+use Demoshop\Local\Infrastructure\HttpRequestClass;
+use Demoshop\Local\Infrastructure\Wrapper;
+use Demoshop\Local\Presentation\controllers\ProductController;
 
 /**
  * Entry point for the Demo Shop application.
@@ -21,7 +24,7 @@
  * - POST requests return HttpResponseClass objects, which are sent to the browser
  */
 
-require_once __DIR__ . '/../../../autoload.php';
+require_once __DIR__ . '/../../../vendor/autoload.php';
 $request = new HttpRequestClass();
 $wrapper = new Wrapper();
 

@@ -1,4 +1,5 @@
 <?php
+namespace Demoshop\Local\Infrastructure;
 
 /**
  * Class HttpRequestClass

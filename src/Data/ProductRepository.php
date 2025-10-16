@@ -1,4 +1,10 @@
 <?php
+namespace Demoshop\Local\Data;
+
+use Demoshop\Local\Models\Product;
+use Exception;
+use PDO;
+use PDOException;
 
 /**
  * Class ProductRepository
@@ -132,9 +138,7 @@ class ProductRepository implements IRepository
         $price = isset($row['Price']) ? (float)$row['Price'] : 0.0;
         $enabled = isset($row['Enabled']) ? (bool)$row['Enabled'] : false;
 
-        $product = new Product($sku, $title, $brand, $category, $sdesc, $ldesc, $price, $imageData, $enabled);
-
-        return $product;
+        return new Product($sku, $title, $brand, $category, $sdesc, $ldesc, $price, $imageData, $enabled);
     }
 
     /**

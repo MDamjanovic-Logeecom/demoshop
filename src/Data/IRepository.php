@@ -1,4 +1,7 @@
 <?php
+namespace Demoshop\Local\Data;
+
+use Demoshop\Local\Models\Product;
 
 /**
  * Interface IRepository

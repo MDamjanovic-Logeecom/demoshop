@@ -1,4 +1,5 @@
 <?php
+namespace Demoshop\Local\Models;
 
 /**
  * Class Product

@@ -1,4 +1,10 @@
 <?php
+namespace Demoshop\Local\Presentation\controllers;
+
+use Demoshop\Local\Business\ProductService;
+use Demoshop\Local\Data\ProductRepository;
+use Demoshop\Local\Infrastructure\HttpRequestClass;
+use Demoshop\Local\Infrastructure\HttpResponseClass;
 
 /**
  * Class ProductController

@@ -1,4 +1,8 @@
 <?php
+namespace Demoshop\Local\Business;
+
+use Demoshop\Local\Models\Product;
+
 /**
  * Interface IService
  *
@@ -19,9 +23,9 @@ interface IService
      * Retrieve a product by its SKU.
      *
      * @param string $sku The SKU of the product to retrieve.
-     * @return Product The product object corresponding to the SKU.
+     * @return Product|null The product object corresponding to the SKU.
      */
-    public function getBySKU(string $sku): Product;
+    public function getBySKU(string $sku): ?Product;
 
     /**
      * Delete a product by its SKU.

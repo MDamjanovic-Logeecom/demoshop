@@ -1,4 +1,9 @@
 <?php
+namespace Demoshop\Local\Business;
+
+use Demoshop\Local\Data\ProductRepository;
+use Demoshop\Local\Infrastructure\Wrapper;
+use Demoshop\Local\Models\Product;
 
 /**
  * Class ProductService
@@ -38,9 +43,9 @@ class ProductService implements IService
      * Retrieves a single product by SKU.
      *
      * @param string $sku The SKU of the product to retrieve.
-     * @return Product The product object.
+     * @return Product|null The product object.
      */
-    public function getBySKU(string $sku): Product
+    public function getBySKU(string $sku): ?Product
     {
         return $this->repository->getBySKU($sku);
     }
