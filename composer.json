@@ -1,0 +1,11 @@
+{
+    "name": "demoshop/local",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Demoshop\\Local\\": "src/"
+        }
+    },
+    "minimum-stability": "stable",
+    "require": {}
+}
