@@ -4,14 +4,14 @@ namespace Demoshop\Local\Presentation\controllers;
 
 use Demoshop\Local\Business\IProductService;
 use Demoshop\Local\Data\ProductRepository;
-use Demoshop\Local\Infrastructure\http\HttpRequestClass;
-use Demoshop\Local\Infrastructure\http\HttpResponseClass;
+use Demoshop\Local\Infrastructure\http\HttpRequest;
+use Demoshop\Local\Infrastructure\http\HttpResponse;
 
 /**
  * Class ProductController
  *
  * Handles HTTP requests related to products.
- * Uses ProductService for business logic and returns HttpResponseClass objects.
+ * Uses ProductService for business logic and returns HttpResponse objects.
  */
 class ProductController
 {
@@ -36,14 +36,15 @@ class ProductController
     /**
      * Retrieve all products and prepare HTTP response with products_list view.
      *
-     * @param HttpRequestClass $request HTTP request object
-     * @return HttpResponseClass Response containing status, headers, and view with data
+     * @param HttpRequest $request HTTP request object
+     *
+     * @return HttpResponse Response containing status, headers, and view with data
      */
-    public function getAllProducts(HttpRequestClass $request): HttpResponseClass
+    public function getAllProducts(HttpRequest $request): HttpResponse
     {
         $products = $this->service->getAll();
 
-        $response = new HttpResponseClass();
+        $response = new HttpResponse();
         $response->setStatusCode(200);
         $response->setBody([
             'view' => 'products_list.php',
@@ -56,29 +57,30 @@ class ProductController
     /**
      * Deletes a product based on the SKU received via POST request.
      *
-     * @param HttpRequestClass $request The HTTP request object containing POST data
-     * @return HttpResponseClass HTTP response indicating the result of the deletion.
+     * @param HttpRequest $request The HTTP request object containing POST data
+     *
+     * @return HttpResponse HTTP response indicating the result of the deletion.
      *                             - 302 Redirect on success/failure with status message in URL
      *                             - 405 Method Not Allowed if request is not POST or delete_sku not provided
      */
-    public function deleteProductBySKU(HttpRequestClass $request): HttpResponseClass
+    public function deleteProductBySKU(HttpRequest $request): HttpResponse
     {
-        $response = new HttpResponseClass();
+        $response = new HttpResponse();
 
-        if (!$request->isPost() || $request->getPost('delete_sku') === null) {
+        if (!$request->isPost() || $request->getHttpPost('delete_sku') === null) {
             $response->setStatusCode(405); // If request method is not POST (S.C. method not allowed)
 
             return $response;
         }
 
         // If request is POST
-        $sku = $request->getPost('delete_sku');
+        $sku = $request->getHttpPost('delete_sku');
         $deleted = $this->service->deleteBySKU($sku); // Asking service to delete
 
         $status = $deleted ? 'success' : 'error';
         $message = $deleted ? 'Product deleted successfully' : 'Failed to delete product';
 
-        // Redirect using HttpResponseClass with message in URL (will be cleared in message.js)
+        // Redirect using HttpResponse with message in URL (will be cleared in message.js)
         $response->setStatusCode(302);
         $response->setHeader('Location', "/index.php?page=list&status={$status}&message=" . urlencode($message));
 
@@ -88,11 +90,12 @@ class ProductController
     /**
      * Updates an existing product with the submitted POST data and optional uploaded image.
      *
-     * @param HttpRequestClass $request The HTTP request object containing POST data and files
-     * @return HttpResponseClass HTTP response indicating the result of the edit.
+     * @param HttpRequest $request The HTTP request object containing POST data and files
+     *
+     * @return HttpResponse HTTP response indicating the result of the edit.
      *                             - 302 Redirect after POST with status message in URL
      */
-    public function editProduct(HttpRequestClass $request): HttpResponseClass
+    public function editProduct(HttpRequest $request): HttpResponse
     {
         $imageFile = $request->getFiles('image') ?? null;
 
@@ -101,7 +104,7 @@ class ProductController
         $status = $success ? 'success' : 'error';
         $message = $success ? 'Product edited successfully.' : 'Failed to edit product.'; // For displaying alerts
 
-        $response = new HttpResponseClass();
+        $response = new HttpResponse();
         $response->setStatusCode(302); // redirect after POST
         $response->setHeader('Location', "/index.php?page=list&status={$status}&message=" . urlencode($message));
 
@@ -111,11 +114,12 @@ class ProductController
     /**
      * Creates a new product using submitted POST data and optional uploaded image.
      *
-     * @param HttpRequestClass $request The HTTP request object containing POST data and uploaded files
-     * @return HttpResponseClass HTTP response object for redirection after creation
+     * @param HttpRequest $request The HTTP request object containing POST data and uploaded files
+     *
+     * @return HttpResponse HTTP response object for redirection after creation
      *                             - 302 Redirect with status message in URL
      */
-    public function addProduct(HttpRequestClass $request): HttpResponseClass
+    public function addProduct(HttpRequest $request): HttpResponse
     {
         $imageFile = $request->getFiles('image') ?? null;
         $success = $this->service->create($request->getPostArray(), $imageFile); // Asks service to add new product
@@ -123,7 +127,7 @@ class ProductController
         $status = $success ? 'success' : 'error';
         $message = $success ? 'Product added successfully.' : 'Failed to add product.'; // For displaying alerts
 
-        $response = new HttpResponseClass();
+        $response = new HttpResponse();
         $response->setStatusCode(302); // 302 = redirect
         $response->setHeader('Location', "/index.php?page=list&status={$status}&message=" . urlencode($message));
 
@@ -137,14 +141,15 @@ class ProductController
      * Instead, the product data and view filename are stored in the response body.
      *
      * @param string|null $sku The SKU of the product to edit; nullable for safety
-     * @return HttpResponseClass The HTTP response object containing:
+     *
+     * @return HttpResponse The HTTP response object containing:
      *                            - 200 OK status and view data if product exists
      *                            - 400 Bad Request status if SKU is missing
      *                            - 404 Not Found if product is not found
      */
-    public function showEditForm(?string $sku): HttpResponseClass
+    public function showEditForm(?string $sku): HttpResponse
     {
-        $response = new HttpResponseClass();
+        $response = new HttpResponse();
 
         if (!$sku) {
             $response->setStatusCode(400);

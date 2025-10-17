@@ -1,11 +1,12 @@
 <?php
 
-namespace Demoshop\Local\Infrastructure\dependencyInjection;
+namespace Demoshop\Local\Infrastructure\DI;
 
 use Demoshop\Local\Business\IProductService;
 use Demoshop\Local\Business\ProductService;
 use Demoshop\Local\Data\IProductRepository;
 use Demoshop\Local\Data\ProductRepository;
+use PDO;
 
 /**
  * Class ServiceRegistry
@@ -24,12 +25,18 @@ class ServiceRegistry
     private array $services = [];
 
     /**
+     * @var PDO holds the database connection.
+     */
+    private PDO $pdo;
+
+    /**
      * ServiceRegistry constructor.
      *
      * Initializes the registry and registers the default services and repositories.
      */
-    public function __construct()
+    public function __construct(PDO $pdo)
     {
+        $this->pdo = $pdo;
         $this->registerDefaults();
     }
 
@@ -44,7 +51,7 @@ class ServiceRegistry
     {
         $this->services[IProductRepository::class] = function () { // Closure function stored in asoc. array
 
-            return new ProductRepository();                        // each time value for key called-> new obj created
+            return new ProductRepository($this->pdo);                        // each time value for key called-> new obj created
         };
 
         $this->services[IProductService::class] = function () {
@@ -52,7 +59,6 @@ class ServiceRegistry
 
             return new ProductService($repository); // For now, returns the only concrete class there is
         };
-
     }
 
     /**
@@ -73,9 +79,10 @@ class ServiceRegistry
 
         $service = $this->services[$className];
 
-        // If closure function is in array, replace it with the value got from the closure
+        // If closure function is in array, replace it with the value got from that closure
         if (is_callable($service)) {
-            $this->services[$className] = $service = $service();
+            $service = $service();
+            $this->services[$className] = $service;
         }
 
         return $service;

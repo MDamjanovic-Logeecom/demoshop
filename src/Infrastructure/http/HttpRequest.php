@@ -2,12 +2,12 @@
 namespace Demoshop\Local\Infrastructure\http;
 
 /**
- * Class HttpRequestClass
+ * Class HttpRequest
  *
  * Encapsulates HTTP request data ($_GET, $_POST, $_FILES, $_SERVER)
  * and provides getter methods to safely access them.
  */
-class HttpRequestClass
+class HttpRequest
 {
     /** @var array Stores POST data */
     private array $post;
@@ -22,7 +22,7 @@ class HttpRequestClass
     private array $server;
 
     /**
-     * HttpRequestClass constructor.
+     * HttpRequest constructor.
      *
      * Copies superglobals to internal properties for controlled access.
      */
@@ -39,9 +39,10 @@ class HttpRequestClass
      *
      * @param string $key The POST key to retrieve.
      * @param mixed $default The default value to return if key does not exist.
+     *
      * @return mixed The value from POST or the default.
      */
-    public function getPost(string $key, mixed $default = null): mixed
+    public function getHttpPost(string $key, mixed $default = null): mixed
     {
         return $this->post[$key] ?? $default;
     }
@@ -61,9 +62,10 @@ class HttpRequestClass
      *
      * @param string $key The GET key to retrieve.
      * @param mixed $default The default value if key does not exist.
+     *
      * @return mixed The value from GET or the default.
      */
-    public function getGet(string $key, mixed $default = null): mixed
+    public function getHttpGet(string $key, mixed $default = null): mixed
     {
         return $this->get[$key] ?? $default;
     }
@@ -88,6 +90,7 @@ class HttpRequestClass
      *
      * @param string $key The SERVER key to retrieve.
      * @param mixed $default The default value if key does not exist.
+     *
      * @return mixed The value from SERVER or the default.
      */
     public function getServer(string $key, mixed $default = null): mixed

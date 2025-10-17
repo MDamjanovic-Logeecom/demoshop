@@ -4,7 +4,7 @@ namespace Demoshop\Local\Infrastructure\http;
 /**
  * Class representing an HTTP response.
  */
-class HttpResponseClass
+class HttpResponse
 {
     /** @var int HTTP status code (default 200) */
     private int $statusCode = 200;

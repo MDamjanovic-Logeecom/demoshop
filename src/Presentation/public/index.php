@@ -1,9 +1,8 @@
 <?php
 
 use Demoshop\Local\Business\IProductService;
-use Demoshop\Local\Infrastructure\dependencyInjection\Bootstrap;
-use Demoshop\Local\Infrastructure\http\HttpRequestClass;
-use Demoshop\Local\Infrastructure\Wrapper;
+use Demoshop\Local\Infrastructure\Bootstrap;
+use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Presentation\controllers\ProductController;
 
 /**
@@ -18,13 +17,13 @@ use Demoshop\Local\Presentation\controllers\ProductController;
  * - list (default): Displays all products
  *
  * The script uses:
- * - HttpRequestClass for accessing GET, POST, FILES, and SERVER data
+ * - HttpRequest for accessing GET, POST, FILES, and SERVER data
  * - ProductController for all product-related actions
  * - Wrapper for access to superglobals if needed
  *
  * Notes:
  * - GET requests render views directly
- * - POST requests return HttpResponseClass objects, which are sent to the browser
+ * - POST requests return HttpResponse objects, which are sent to the browser
  */
 
 require_once __DIR__ . '/../../../vendor/autoload.php';
@@ -32,11 +31,10 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 $bootstrap = new Bootstrap();
 $serviceRegistry = $bootstrap->init();
 
-$request = new HttpRequestClass();
-$wrapper = new Wrapper();
+$request = new HttpRequest();
 
 // get the page name from the URL
-$page = $wrapper->getGet('page') ?? 'list'; // default page is the list
+$page = $request->getHttpGet('page') ?? 'list'; // default page is the list
 
 switch ($page) {
     case 'add':
@@ -66,7 +64,7 @@ switch ($page) {
             break;
         }
         // GET: show edit form
-        $sku = $request->getGet('sku') ?? null;
+        $sku = $request->getHttpGet('sku') ?? null;
         $response = $controller->showEditForm($sku); // Asking service to fetch product by sku
 
         if ($response->getStatusCode() !== 200) {

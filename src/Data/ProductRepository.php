@@ -26,28 +26,9 @@ class ProductRepository implements IProductRepository
      * Configuration details (host, database, user, password, charset) are defined here.
      * Throws an exception and stops execution if the connection fails.
      */
-    public function __construct()
+    public function __construct(PDO $pdo)
     {
-        //Database configuration
-        $host = 'localhost';    // MySQL server on windows from WSL
-        $db = 'milos';          // DB name
-        $user = 'root';         // MySQL user
-        $pass = 'root';         // user password
-        $charset = 'utf8mb4';
-
-        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-
-        $options = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-        ];
-
-        try {
-            $this->pdo = new PDO($dsn, $user, $pass, $options);
-        } catch (PDOException $e) {
-            die('Database connection failed: ' . $e->getMessage());
-        }
+        $this->pdo = $pdo;
     }
 
     /**
@@ -109,6 +90,7 @@ class ProductRepository implements IProductRepository
      * Handles missing fields and converts the 'Image' column from BLOB to base64 if present.
      *
      * @param string $sku SKU of the product to fetch.
+     *
      * @return Product The product object corresponding to the given SKU.
      */
     public function getBySKU(string $sku): Product
@@ -145,6 +127,7 @@ class ProductRepository implements IProductRepository
      * Delete a product from the database by its SKU.
      *
      * @param string $sku SKU of the product to delete.
+     *
      * @return bool True if the product was deleted, false on failure or if not found.
      */
     public function deleteBySKU(string $sku): bool
@@ -168,6 +151,7 @@ class ProductRepository implements IProductRepository
      * Update an existing product in the database.
      *
      * @param Product $product The product object containing updated data.
+     *
      * @return bool True if update succeeds, false if an exception occurs.
      */
     public function update(Product $product): bool
@@ -219,6 +203,7 @@ class ProductRepository implements IProductRepository
      * Insert a new product into the database.
      *
      * @param Product $product The product object to insert.
+     *
      * @return bool True on success, false on failure.
      */
     public function create(Product $product): bool

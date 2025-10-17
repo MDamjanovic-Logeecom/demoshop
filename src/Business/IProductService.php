@@ -23,6 +23,7 @@ interface IProductService
      * Retrieve a product by its SKU.
      *
      * @param string $sku The SKU of the product to retrieve.
+     *
      * @return Product|null The product object corresponding to the SKU.
      */
     public function getBySKU(string $sku): ?Product;
@@ -31,6 +32,7 @@ interface IProductService
      * Delete a product by its SKU.
      *
      * @param string $sku The SKU of the product to delete.
+     *
      * @return bool True if the product was deleted, false otherwise.
      */
     public function deleteBySKU(string $sku): bool;
@@ -40,6 +42,7 @@ interface IProductService
      *
      * @param array $formData Array of form data representing the product fields.
      * @param array|null $imageFile Optional uploaded image file.
+     *
      * @return bool True on success, false on failure.
      */
     public function create(array $formData, mixed $imageFile): bool;
@@ -49,6 +52,7 @@ interface IProductService
      *
      * @param array $formData Array of form data representing the updated product fields.
      * @param array|null $imageFile Optional uploaded image file.
+     *
      * @return bool True on success, false on failure.
      */
     public function update(array $formData, ?array $imageFile): bool;
