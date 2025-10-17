@@ -1,5 +1,5 @@
 <?php
-namespace Demoshop\Local\Infrastructure;
+namespace Demoshop\Local\Infrastructure\http;
 
 /**
  * Class representing an HTTP response.
@@ -100,7 +100,7 @@ class HttpResponseClass
         if (is_array($this->body) && isset($this->body['view'])) { // Is it a structured resp. containing a view
             $data = $this->body;
             extract($data, EXTR_SKIP); // Makes $products (or other variables) available in the view
-            require __DIR__ . '/../Presentation/views/' . $data['view'];
+            require __DIR__ . '/../../Presentation/views/' . $data['view'];
 
             return;
         }

@@ -1,5 +1,8 @@
 <?php
-use Demoshop\Local\Infrastructure\HttpRequestClass;
+
+use Demoshop\Local\Business\IProductService;
+use Demoshop\Local\Infrastructure\dependencyInjection\Bootstrap;
+use Demoshop\Local\Infrastructure\http\HttpRequestClass;
 use Demoshop\Local\Infrastructure\Wrapper;
 use Demoshop\Local\Presentation\controllers\ProductController;
 
@@ -25,6 +28,10 @@ use Demoshop\Local\Presentation\controllers\ProductController;
  */
 
 require_once __DIR__ . '/../../../vendor/autoload.php';
+
+$bootstrap = new Bootstrap();
+$serviceRegistry = $bootstrap->init();
+
 $request = new HttpRequestClass();
 $wrapper = new Wrapper();
 
@@ -33,7 +40,9 @@ $page = $wrapper->getGet('page') ?? 'list'; // default page is the list
 
 switch ($page) {
     case 'add':
-        $controller = new ProductController();
+        // Injecting new controller with service interface through constructor
+        $productService = $serviceRegistry->get(IProductService::class);
+        $controller = new ProductController($productService);
 
         if (!$request->isPost()) { // GET request -> show add form w/o data
             require '../views/add_product.php';
@@ -46,7 +55,8 @@ switch ($page) {
         break;
 
     case 'edit':
-        $controller = new ProductController();
+        $productService = $serviceRegistry->get(IProductService::class);
+        $controller = new ProductController($productService);
 
         // 2 options: load product info to fill table / post an edit
         if ($request->isPost()) {
@@ -70,14 +80,18 @@ switch ($page) {
         break;
 
     case 'delete':
-        $controller = new ProductController();
+        $productService = $serviceRegistry->get(IProductService::class);
+        $controller = new ProductController($productService);
+
         $response = $controller->deleteProductBySKU($request);
         $response->send();
         break;
 
     case 'list':
     default:
-        $controller = new ProductController();
+        $productService = $serviceRegistry->get(IProductService::class);
+        $controller = new ProductController($productService);
+
         $response = $controller->getAllProducts($request);
         $response->send(); // This will include the view and pass $products
         break;

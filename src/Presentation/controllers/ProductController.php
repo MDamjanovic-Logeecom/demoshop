@@ -1,10 +1,11 @@
 <?php
+
 namespace Demoshop\Local\Presentation\controllers;
 
-use Demoshop\Local\Business\ProductService;
+use Demoshop\Local\Business\IProductService;
 use Demoshop\Local\Data\ProductRepository;
-use Demoshop\Local\Infrastructure\HttpRequestClass;
-use Demoshop\Local\Infrastructure\HttpResponseClass;
+use Demoshop\Local\Infrastructure\http\HttpRequestClass;
+use Demoshop\Local\Infrastructure\http\HttpResponseClass;
 
 /**
  * Class ProductController
@@ -15,19 +16,19 @@ use Demoshop\Local\Infrastructure\HttpResponseClass;
 class ProductController
 {
     /**
-     * @var ProductService Service layer for product-related operations
+     * @var IProductService Service layer for product-related operations.
+     * Concrete instance is injected in the constructor.
      */
-    private ProductService $service;
+    private IProductService $service;
 
     /**
      * ProductController constructor.
      *
      * Initializes the ProductService with its repository.
      */
-    public function __construct()
+    public function __construct(IProductService $service)
     {
-        $repository = new ProductRepository();
-        $this->service = new ProductService($repository);
+        $this->service = $service;
     }
 
     //------------------------------------------------------------------------------------ Data (service) calls:

@@ -1,7 +1,8 @@
 <?php
+
 namespace Demoshop\Local\Business;
 
-use Demoshop\Local\Data\ProductRepository;
+use Demoshop\Local\Data\IProductRepository;
 use Demoshop\Local\Infrastructure\Wrapper;
 use Demoshop\Local\Models\Product;
 
@@ -11,19 +12,20 @@ use Demoshop\Local\Models\Product;
  * Service layer for product operations.
  * Responsible for orchestrating product-related business logic
  * and delegating operations to the ProductRepository.
- * Implements the IService interface.
+ * Implements the IProductService interface.
  */
-class ProductService implements IService
+class ProductService implements IProductService
 {
     /**
-     * @var ProductRepository Repository used to access product data.
+     * @var IProductRepository Repository used to access product data.
+     * Concrete instance is injected in the constructor.
      */
-    private ProductRepository $repository;
+    private IProductRepository $repository;
 
     /**
-     * @param ProductRepository $repository Repository instance for database operations.
+     * @param IProductRepository $repository Repository instance for database operations.
      */
-    public function __construct(ProductRepository $repository)
+    public function __construct(IProductRepository $repository)
     {
         $this->repository = $repository;
     }
@@ -158,6 +160,7 @@ class ProductService implements IService
     }
 
     //-----------------------------------------------------------Helper functions:
+
     /**
      * Validates an uploaded image file.
      *

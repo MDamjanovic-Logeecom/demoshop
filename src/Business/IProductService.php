@@ -4,13 +4,13 @@ namespace Demoshop\Local\Business;
 use Demoshop\Local\Models\Product;
 
 /**
- * Interface IService
+ * Interface IProductService
  *
  * Defines the contract for service classes handling product operations.
  * Any class implementing this interface must provide methods for
  * CRUD operations on products.
  */
-interface IService
+interface IProductService
 {
     /**
      * Retrieve all products.

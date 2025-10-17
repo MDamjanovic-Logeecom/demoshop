@@ -10,9 +10,9 @@ use PDOException;
  * Class ProductRepository
  *
  * Handles database operations related to products.
- * Implements the IRepository interface for CRUD operations.
+ * Implements the IProductRepository interface for CRUD operations.
  */
-class ProductRepository implements IRepository
+class ProductRepository implements IProductRepository
 {
     /**
      * @var PDO The PDO instance for database connection.

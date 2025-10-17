@@ -4,11 +4,11 @@ namespace Demoshop\Local\Data;
 use Demoshop\Local\Models\Product;
 
 /**
- * Interface IRepository
+ * Interface IProductRepository
  *
  * Defines the contract for product repository operations.
  */
-interface IRepository
+interface IProductRepository
 {
     /**
      * Retrieve all products from the database.
