@@ -1,6 +1,8 @@
 <?php
+
 namespace Demoshop\Local\Business;
 
+use Demoshop\Local\DTO\ProductDTO;
 use Demoshop\Local\Models\Product;
 
 /**
@@ -26,7 +28,7 @@ interface IProductService
      *
      * @return Product|null The product object corresponding to the SKU.
      */
-    public function getBySKU(string $sku): ?Product;
+    public function getBySKU(string $sku): ?ProductDTO;
 
     /**
      * Delete a product by its SKU.
@@ -40,21 +42,16 @@ interface IProductService
     /**
      * Create a new product.
      *
-     * @param array $formData Array of form data representing the product fields.
-     * @param array|null $imageFile Optional uploaded image file.
-     *
+     * @param ProductDTO $productDTO
      * @return bool True on success, false on failure.
      */
-    public function create(array $formData, mixed $imageFile): bool;
+    public function create(ProductDTO $productDTO): bool;
 
     /**
      * Update an existing product.
      *
-     * @param array $formData Array of form data representing the updated product fields.
-     * @param array|null $imageFile Optional uploaded image file.
-     *
+     * @param ProductDTO $productDTO
      * @return bool True on success, false on failure.
      */
-    public function update(array $formData, ?array $imageFile): bool;
-
+    public function update(ProductDTO $productDTO): bool;
 }

@@ -17,43 +17,43 @@
             <div class="left-side">
                 <div class="form-group">
                     <label>SKU:</label>
-                    <input type="text" name="sku" value="<?= htmlspecialchars($product->getSKU()) ?>">  <!-- It's red, but it autoloaded and works. -->
+                    <input type="text" name="sku" value="<?= htmlspecialchars($product->sku) ?>">  <!-- It's red, but it autoloaded and works. -->
                 </div>                                                                                  <!-- I'll add the @var at the top for now..' -->
                 <div class="form-group">
                     <label>Title:</label>
-                    <input type="text" name="title" value="<?= htmlspecialchars($product->getTitle()) ?>">
+                    <input type="text" name="title" value="<?= htmlspecialchars($product->title) ?>">
                 </div>
                 <div class="form-group">
                     <label>Brand:</label>
-                    <input type="text" name="brand" value="<?= htmlspecialchars($product->getBrand()) ?>">
+                    <input type="text" name="brand" value="<?= htmlspecialchars($product->brand) ?>">
                 </div>
                 <div class="form-group">
                     <label>Category:</label>
                     <select name="category">
-                        <option value="Laptop" <?= $product->getCategory() === 'Laptop' ? 'selected' : '' ?>>Laptop
+                        <option value="Laptop" <?= $product->category === 'Laptop' ? 'selected' : '' ?>>Laptop
                         </option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Price:</label>
-                    <input type="number" step="0.01" name="price" value="<?= htmlspecialchars($product->getPrice()) ?>">
+                    <input type="number" step="0.01" name="price" value="<?= htmlspecialchars($product->price) ?>">
                 </div>
                 <div class="form-group">
                     <label>Short Description:</label>
                     <textarea
-                            name="short_description"><?= htmlspecialchars($product->getShortDescription() ?? '') ?></textarea>
+                            name="short_description"><?= htmlspecialchars($product->shortDescription ?? '') ?></textarea>
                 </div>
                 <div class="form-group">
                     <label>Description:</label>
                     <textarea
-                            name="description"><?= htmlspecialchars($product->getLongDescription() ?? '') ?></textarea>
+                            name="description"><?= htmlspecialchars($product->longDescription ?? '') ?></textarea>
                 </div>
                 <div class="checkbox-group">
-                    <input type="checkbox" name="enabled" <?= $product->isEnabled() ? 'checked' : '' ?>>
+                    <input type="checkbox" name="enabled" <?= $product->enabled ? 'checked' : '' ?>>
                     <label>Enabled in Shop</label>
                 </div>
                 <div class="checkbox-group">
-                    <input type="checkbox" name="featured" <?= $product->isFeatured() ? 'checked' : '' ?>>
+                    <input type="checkbox" name="featured" <?= $product->featured ? 'checked' : '' ?>>
                     <label>Featured</label>
                 </div>
             </div>
@@ -61,7 +61,7 @@
             <div class="right-side">
                 <!-- Image preview -->
                 <img id="preview"
-                     src="<?= !empty($product->getImage()) ? $product->getImage() : 'placeholder.jpg' ?>"
+                     src="<?= !empty($product->image) ? $product->image : 'placeholder.jpg' ?>"
                      alt="Product Image"
                      style="min-width:300px; min-height:300px; display:block; margin-bottom:5px;">
 

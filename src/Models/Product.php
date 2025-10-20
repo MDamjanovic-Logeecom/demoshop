@@ -1,4 +1,5 @@
 <?php
+
 namespace Demoshop\Local\Models;
 
 /**
@@ -17,8 +18,8 @@ class Product
     /** @var string|null The brand name (optional) */
     private ?string $brand;
 
-    /** @var string The category of the product */
-    private string $category;
+    /** @var string|null The category of the product */
+    private ?string $category;
 
     /** @var string|null Short description of the product (optional) */
     private ?string $shortDescription;
@@ -26,8 +27,8 @@ class Product
     /** @var string|null Long description of the product (optional) */
     private ?string $longDescription;
 
-    /** @var float Product price */
-    private float $price;
+    /** @var float|null Product price */
+    private ?float $price;
 
     /** @var string|null Base64 encoded image or image path (optional) */
     private ?string $image;
@@ -174,8 +175,6 @@ class Product
     {
         return $this->featured;
     }
-
-    // Setters
 
     /**
      * Set the product title.

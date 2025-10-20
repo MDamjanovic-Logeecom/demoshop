@@ -61,31 +61,31 @@ $products = $products ?? [];
                 <td class="checkbox-cell">
                     <input type="checkbox" name="select_item[]" value="<?= $index ?>">
                 </td>
-                <td><?= htmlspecialchars($product->getTitle()) ?></td>
-                <td><?= htmlspecialchars($product->getSKU()) ?></td>
-                <td><?= htmlspecialchars($product->getBrand()) ?></td>
-                <td><?= htmlspecialchars($product->getCategory()) ?></td>
-                <td><?= htmlspecialchars($product->getShortDescription()) ?></td>
-                <td>$<?= number_format($product->getPrice(), 2) ?></td>
+                <td><?= htmlspecialchars($product->title) ?></td>
+                <td><?= htmlspecialchars($product->sku) ?></td>
+                <td><?= htmlspecialchars($product->brand) ?></td>
+                <td><?= htmlspecialchars($product->category) ?></td>
+                <td><?= htmlspecialchars($product->shortDescription) ?></td>
+                <td>$<?= number_format($product->price, 2) ?></td>
                 <td class="checkbox-cell">
                     <input
                             type="checkbox"
                             name="enabled[]"
                             value="<?= $index ?>"
-                            <?= $product->isEnabled() ? 'checked' : '' ?>
+                            <?= $product->enabled ? 'checked' : '' ?>
                             onchange="toggleEnabled(<?= $index ?>, this.checked)">
                 </td>
                 <td class="button-cell">
                     <form action="index.php?" method="get" style="display:inline;">
                         <input type="hidden" name="page" value="edit">
-                        <input type="hidden" name="sku" value="<?= htmlspecialchars($product->getSKU()) ?>">
+                        <input type="hidden" name="sku" value="<?= htmlspecialchars($product->sku) ?>">
                         <button type="submit">Edit</button>
                     </form>
                 </td>
                 <td class="button-cell">
                     <form action="index.php?page=delete" method="post" style="display:inline;"
-                          onsubmit="return confirm('Are you sure you want to delete <?= htmlspecialchars($product->getTitle()) ?>?');">
-                        <input type="hidden" name="delete_sku" value="<?= htmlspecialchars($product->getSKU()) ?>">
+                          onsubmit="return confirm('Are you sure you want to delete <?= htmlspecialchars($product->title) ?>?');">
+                        <input type="hidden" name="delete_sku" value="<?= htmlspecialchars($product->sku) ?>">
                         <button type="submit">Delete</button>
                     </form>
                 </td>

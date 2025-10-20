@@ -1,4 +1,5 @@
 <?php
+
 namespace Demoshop\Local\Data;
 
 use Demoshop\Local\Models\Product;
@@ -46,36 +47,9 @@ class ProductRepository implements IProductRepository
         try {
             $stmt = $this->pdo->query("SELECT * FROM products");
 
-            while ($row = $stmt->fetch()) {
-
-                // Block for image conversion
-                $imageData = null;
-                if (!empty($row['Image'])) {
-                    // BLOB -> base64
-                    $base64 = base64_encode($row['Image']);
-                    // MIME type
-                    $imageData = "data:image/jpeg;base64," . $base64;
-                }
-
-                $sku = isset($row['SKU']) ? (string)$row['SKU'] : '';
-                $title = isset($row['Title']) ? (string)$row['Title'] : '';
-                $brand = isset($row['Brand']) ? (string)$row['Brand'] : '';
-                $category = isset($row['Category']) ? (string)$row['Category'] : '';
-                $sdesc = isset($row['Dscrptn']) ? (string)$row['Dscrptn'] : null;
-                $ldesc = isset($row['LDscrptn']) ? (string)$row['LDscrptn'] : null;
-                $price = isset($row['Price']) ? (float)$row['Price'] : 0.0;
-                $enabled = isset($row['Enabled']) ? (bool)$row['Enabled'] : false;
-
-                try {
-                    $product = new Product($sku, $title, $brand, $category, $sdesc, $ldesc, $price, $imageData,
-                        $enabled);
-                } catch (Exception $e) {
-                    echo $e->getMessage();
-                }
-
-                $products[] = $product;
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $products[] = $this->mapRowToProduct($row);
             }
-
         } catch (PDOException $e) {
             echo "Query failed: " . $e->getMessage();
         }
@@ -105,22 +79,7 @@ class ProductRepository implements IProductRepository
             return false;
         }
 
-        // Convert BLOB to Base64 for image if it exists
-        $imageData = null;
-        if (!empty($row['Image'])) {
-            $imageData = "data:image/jpeg;base64," . base64_encode($row['Image']);
-        }
-
-        $sku = isset($row['SKU']) ? (string)$row['SKU'] : '';
-        $title = isset($row['Title']) ? (string)$row['Title'] : '';
-        $brand = isset($row['Brand']) ? (string)$row['Brand'] : '';
-        $category = isset($row['Category']) ? (string)$row['Category'] : '';
-        $sdesc = isset($row['Dscrptn']) ? (string)$row['Dscrptn'] : null;
-        $ldesc = isset($row['LDscrptn']) ? (string)$row['LDscrptn'] : null;
-        $price = isset($row['Price']) ? (float)$row['Price'] : 0.0;
-        $enabled = isset($row['Enabled']) ? (bool)$row['Enabled'] : false;
-
-        return new Product($sku, $title, $brand, $category, $sdesc, $ldesc, $price, $imageData, $enabled);
+        return $this->mapRowToProduct($row);
     }
 
     /**
@@ -137,8 +96,7 @@ class ProductRepository implements IProductRepository
             $stmt->bindParam(':sku', $sku);
             $stmt->execute();
 
-            // Check if any row was affected
-            return $stmt->rowCount() > 0; // Returns boolean directly without if-else
+            return $stmt->rowCount() > 0;
 
         } catch (PDOException $e) {
             echo "Delete failed: " . $e->getMessage();
@@ -178,7 +136,7 @@ class ProductRepository implements IProductRepository
                 ':price' => $product->getPrice()
             ];
 
-            $imageData = $product->getImage(); // already binary or null
+            $imageData = $product->getImage();
 
             if ($imageData !== null) {
                 $sql .= ", Image = :image";
@@ -209,10 +167,8 @@ class ProductRepository implements IProductRepository
     public function create(Product $product): bool
     {
         try {
-            // Base SQL query
             $sql = "INSERT INTO products (SKU, Title, Brand, Category, Dscrptn, LDscrptn, Enabled, Price";
 
-            // Base SQL query (without image yet)
             $params = [
                 ':sku' => $product->getSku(),
                 ':title' => $product->getTitle(),
@@ -248,5 +204,32 @@ class ProductRepository implements IProductRepository
 
             return false;
         }
+    }
+
+    /**
+     * Maps a row from the table and maps it to a Product model object.
+     *
+     * @param array $row from the database.
+     *
+     * @return Product object extracted from row.
+     */
+    private function mapRowToProduct(array $row): Product
+    {
+        $imageData = null;
+        if (!empty($row['Image'])) {
+            $imageData = 'data:image/jpeg;base64,' . base64_encode($row['Image']);
+        }
+
+        return new Product(
+            sku: $row['SKU'],
+            title: $row['Title'],
+            brand: $row['Brand'],
+            category: $row['Category'],
+            shortDescription: $row['Dscrptn'] ?? null,
+            longDescription: $row['LDscrptn'] ?? null,
+            price: (float)$row['Price'],
+            image: $imageData,
+            enabled: (bool)$row['Enabled'],
+        );
     }
 }

@@ -3,7 +3,7 @@
 namespace Demoshop\Local\Presentation\controllers;
 
 use Demoshop\Local\Business\IProductService;
-use Demoshop\Local\Data\ProductRepository;
+use Demoshop\Local\DTO\ProductDTO;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Infrastructure\http\HttpResponse;
 
@@ -30,8 +30,6 @@ class ProductController
     {
         $this->service = $service;
     }
-
-    //------------------------------------------------------------------------------------ Data (service) calls:
 
     /**
      * Retrieve all products and prepare HTTP response with products_list view.
@@ -60,8 +58,6 @@ class ProductController
      * @param HttpRequest $request The HTTP request object containing POST data
      *
      * @return HttpResponse HTTP response indicating the result of the deletion.
-     *                             - 302 Redirect on success/failure with status message in URL
-     *                             - 405 Method Not Allowed if request is not POST or delete_sku not provided
      */
     public function deleteProductBySKU(HttpRequest $request): HttpResponse
     {
@@ -93,13 +89,12 @@ class ProductController
      * @param HttpRequest $request The HTTP request object containing POST data and files
      *
      * @return HttpResponse HTTP response indicating the result of the edit.
-     *                             - 302 Redirect after POST with status message in URL
      */
     public function editProduct(HttpRequest $request): HttpResponse
     {
-        $imageFile = $request->getFiles('image') ?? null;
+        $productDTO = $this->collectFormData($request);
 
-        $success = $this->service->update($request->getPostArray(), $imageFile); // Asks service to update product
+        $success = $this->service->update($productDTO); // Asks service to update product
 
         $status = $success ? 'success' : 'error';
         $message = $success ? 'Product edited successfully.' : 'Failed to edit product.'; // For displaying alerts
@@ -114,21 +109,21 @@ class ProductController
     /**
      * Creates a new product using submitted POST data and optional uploaded image.
      *
-     * @param HttpRequest $request The HTTP request object containing POST data and uploaded files
+     * @param HttpRequest $request The HTTP request object containing POST data and uploaded files.
      *
-     * @return HttpResponse HTTP response object for redirection after creation
-     *                             - 302 Redirect with status message in URL
+     * @return HttpResponse HTTP response object for redirection after creation.
      */
     public function addProduct(HttpRequest $request): HttpResponse
     {
-        $imageFile = $request->getFiles('image') ?? null;
-        $success = $this->service->create($request->getPostArray(), $imageFile); // Asks service to add new product
+        $productDTO = $this->collectFormData($request);
+
+        $success = $this->service->create($productDTO);
 
         $status = $success ? 'success' : 'error';
         $message = $success ? 'Product added successfully.' : 'Failed to add product.'; // For displaying alerts
 
         $response = new HttpResponse();
-        $response->setStatusCode(302); // 302 = redirect
+        $response->setStatusCode(302);
         $response->setHeader('Location', "/index.php?page=list&status={$status}&message=" . urlencode($message));
 
         return $response;
@@ -142,10 +137,7 @@ class ProductController
      *
      * @param string|null $sku The SKU of the product to edit; nullable for safety
      *
-     * @return HttpResponse The HTTP response object containing:
-     *                            - 200 OK status and view data if product exists
-     *                            - 400 Bad Request status if SKU is missing
-     *                            - 404 Not Found if product is not found
+     * @return HttpResponse The HTTP response.
      */
     public function showEditForm(?string $sku): HttpResponse
     {
@@ -158,9 +150,9 @@ class ProductController
             return $response;
         }
 
-        $product = $this->service->getBySKU($sku);
+        $productDTO = $this->service->getBySKU($sku);
 
-        if (!$product) {
+        if (!$productDTO) {
             $response->setStatusCode(404);
             $response->setBody('Product not found.');
 
@@ -170,8 +162,39 @@ class ProductController
         // Instead of rendering directly, the product is stored in response content
         // which can be later used by the index file
         $response->setStatusCode(200);
-        $response->setBody(['view' => 'edit_product.php', 'product' => $product]);
+        $response->setBody(['view' => 'edit_product.php', 'product' => $productDTO]);
 
         return $response;
+    }
+
+    /**
+     * Collects data from form to avoid duplicate code for POST functionalities.
+     *
+     * @param HttpRequest $request The HTTP request object containing POST data and uploaded files.
+     *
+     * @return ProductDTO containing all form entries.
+     */
+    private function collectFormData(HttpRequest $request): ProductDTO
+    {
+        $imageFile = $request->getFiles('image') ?? null;
+        $imageData = null;
+
+        if ($imageFile && $imageFile['error'] === UPLOAD_ERR_OK) {
+            $imageData = file_get_contents($imageFile['tmp_name']);
+        }
+
+        $productDTO = new ProductDTO(
+            sku: $request->getHttpPost('sku', ''),
+            title: $request->getHttpPost('title', ''),
+            brand: $request->getHttpPost('brand', ''),
+            category: $request->getHttpPost('category', ''),
+            shortDescription: $request->getHttpPost('short_description', ''),
+            description: $request->getHttpPost('description', ''),
+            enabled: $request->getHttpPost('enabled', 0) ? 1 : 0,
+            price: (float)$request->getHttpPost('price', 0.0),
+            image: $imageData,
+        );
+
+        return $productDTO;
     }
 }

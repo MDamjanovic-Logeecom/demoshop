@@ -3,7 +3,7 @@
 namespace Demoshop\Local\Business;
 
 use Demoshop\Local\Data\IProductRepository;
-use Demoshop\Local\Infrastructure\http\HttpRequest;
+use Demoshop\Local\DTO\ProductDTO;
 use Demoshop\Local\Models\Product;
 
 /**
@@ -23,6 +23,13 @@ class ProductService implements IProductService
     private IProductRepository $repository;
 
     /**
+     * Constants for validating image proportions
+     */
+    const int MIN_WIDTH = 600;
+    const int|float MIN_ASPECT_RATIO = 4 / 3;
+    const int|float MAX_ASPECT_RATIO = 16 / 9;
+
+    /**
      * @param IProductRepository $repository Repository instance for database operations.
      */
     public function __construct(IProductRepository $repository)
@@ -30,7 +37,6 @@ class ProductService implements IProductService
         $this->repository = $repository;
     }
 
-    //----------------------------------------------------------Repository functions:
     /**
      * Retrieves all products from the repository.
      *
@@ -38,7 +44,15 @@ class ProductService implements IProductService
      */
     public function getAll(): array
     {
-        return $this->repository->getAll();
+        $products = $this->repository->getAll();
+        $productDTOs = [];
+
+        foreach ($products as $product) {
+            $dto = $this->modelToDTO($product);
+            $productDTOs[] = $dto;
+        }
+
+        return $productDTOs;
     }
 
     /**
@@ -48,9 +62,17 @@ class ProductService implements IProductService
      *
      * @return Product|null The product object.
      */
-    public function getBySKU(string $sku): ?Product
+    public function getBySKU(string $sku): ?ProductDTO
     {
-        return $this->repository->getBySKU($sku);
+        $product = $this->repository->getBySKU($sku);
+
+        if ($product) {
+            $dto = $this->modelToDTO($product);
+
+            return $dto;
+        }
+
+        return null;
     }
 
     /**
@@ -73,48 +95,21 @@ class ProductService implements IProductService
     /**
      * Creates a new product using the provided form data and optional image file.
      *
-     * @param array $formData Associative array of submitted product data (e.g., SKU, title, brand, etc.).
-     * @param array|null $imageFile Uploaded image file information from $_FILES (if any).
+     * @param ProductDTO $productDTO Object containing submitted product data (SKU, title, brand, category, etc.).
      *
      * @return bool True if the product was successfully created, false otherwise.
      */
-    public function create(array $formData, mixed $imageFile): bool
+    public function create(ProductDTO $productDTO): bool
     {
-        $wrapper = new HttpRequest();
+        $product = $this->DTOtoModel($productDTO);
+        $imageData = $formData['image'] ?? null;
 
-        // Handle form submission
-        if ($wrapper->getServer('REQUEST_METHOD') === 'POST') {
-            // Capture submitted data
-            $sku = $wrapper->getHttpPost('sku', ''); // isset: if the field exists, use the value; if not -> use ''
-            $title = $wrapper->getHttpPost('title', '');
-            $brand = $wrapper->getHttpPost('brand', '');
-            $category = $wrapper->getHttpPost('category', '');
-            $sdescription = $wrapper->getHttpPost('short_description', '');
-            $ldescription = $wrapper->getHttpPost('description', '');
-            $enabled = $wrapper->getHttpPost('enabled', 0) ? 1 : 0;
-            $imageFile = $wrapper->getFiles('image', null); // Capture uploaded image file if any
-            $price = (float)$wrapper->getHttpPost('price', 0.0);
+        if ($imageData == null) {
+            return $this->repository->create($product);
+        }
 
-            if ($sku == null || $title == null) {
-                return false;
-            }
-
-            if (!$imageFile || $imageFile['error'] !== UPLOAD_ERR_OK) { // If image not uploaded -> send to db with null image
-                $product = new Product($sku, $title, $brand, $category, $sdescription, $ldescription, $price, null,
-                    $enabled);
-
-                return $this->repository->create($product);
-            }
-
-            // If img uploaded -> check if valid before sending to db
-            if ($this->imageIsOkay($imageFile)) {
-                $imageData = file_get_contents($imageFile['tmp_name']);
-
-                $product = new Product($sku, $title, $brand, $category, $sdescription, $ldescription, $price,
-                    $imageData, $enabled);
-
-                return $this->repository->create($product);
-            }
+        if ($this->IsImageOkay($imageData)) {
+            return $this->repository->create($product);
         }
 
         return false;
@@ -123,88 +118,107 @@ class ProductService implements IProductService
     /**
      * Updates an existing product using the provided form data and optional image file.
      *
-     * @param array $formData Associative array of submitted product data (SKU, title, brand, category, etc.).
-     * @param array|null $imageFile Uploaded image file information from $_FILES (if any).
+     * @param ProductDTO $productDTO Object of submitted product data (SKU, title, brand, category, etc.).
      *
      * @return bool True if the product was successfully updated, false otherwise.
      */
-    public function update(array $formData, ?array $imageFile): bool
+    public function update(ProductDTO $productDTO): bool
     {
-        $wrapper = new HttpRequest();
+        $product = $this->DTOtoModel($productDTO);
+        $imageData = $productDTO->image ?? null;
 
-        //Capture submitted data
-        $sku = $wrapper->getHttpPost('sku', ''); // isset: if the field exists, use the value; if not -> use ''
-        $title = $wrapper->getHttpPost('title', '');
-        $brand = $wrapper->getHttpPost('brand', '');
-        $category = $wrapper->getHttpPost('category', '');
-        $sdescription = $wrapper->getHttpPost('short_description', '');
-        $ldescription = $wrapper->getHttpPost('description', '');
-        $enabled = $wrapper->getHttpPost('enabled', 0) ? 1 : 0;
-        $imageFile = $wrapper->getFiles('image', null); // Capture uploaded image file if any
-        $price = (float)$wrapper->getHttpPost('price', 0.0);
-
-        if (!$imageFile || $imageFile['error'] !== UPLOAD_ERR_OK) { // If image not uploaded -> send to db with null image
-            $product = new Product($sku, $title, $brand, $category, $sdescription, $ldescription, $price, null,
-                $enabled);
-
+        if ($imageData == null) {
             return $this->repository->update($product);
         }
 
-        // If img uploaded -> check if valid b4 sending to db
-        if ($this->imageIsOkay($imageFile)) {
-            $imageData = file_get_contents($imageFile['tmp_name']);
-
-            $product = new Product($sku, $title, $brand, $category, $sdescription, $ldescription, $price,
-                $imageData, $enabled);
-
+        if ($this->IsImageOkay($imageData)) {
             return $this->repository->update($product);
         }
 
         return false;
     }
 
-    //-----------------------------------------------------------Helper functions:
-
     /**
      * Validates an uploaded image file.
      *
      * Checks whether the file was actually uploaded, is a valid image,
      * meets minimum width requirements, and has an acceptable aspect ratio (4:3 to 16:9).
-     * @param array $imageFile Uploaded file information from $_FILES.
+     *
+     * @param string|null $imageData
      *
      * @return bool True if the image is valid, false otherwise.
      */
-    function imageIsOkay($imageFile): bool
+    private function IsImageOkay(?string $imageData): bool
     {
-        // Ensures a file was actually uploaded
-        if (!isset($imageFile['tmp_name']) || !is_uploaded_file($imageFile['tmp_name'])) {
+        if (empty($imageData)) {
             return false;
         }
 
-        // Get image dimensions and validate
-        $info = @getimagesize($imageFile['tmp_name']);
+        $info = @getimagesizefromstring($imageData);
+
         if ($info === false) {
             return false;
         }
-
-        $minwidth = 600;
-        $minAspectRatio = 4 / 3;
-        $maxAspectRatio = 16 / 9;
 
         $width = $info[0];
         $height = $info[1];
         $ratio = $width / $height;
 
-        // Minimum width check
-        if ($width < $minwidth) {
+        if ($width < self::MIN_WIDTH) {
             return false;
         }
 
-        // Aspect ratio check (4:3 - 16:9)
-        if ($ratio < $minAspectRatio || $ratio > $maxAspectRatio) {
+        // Aspect ratio (4:3 - 16:9)
+        if ($ratio < self::MIN_ASPECT_RATIO || $ratio > self::MAX_ASPECT_RATIO) {
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * Converts product DTO to model object.
+     *
+     * @param ProductDTO $dto Object that contains information from form.
+     *
+     * @return Product dto converted to the project model object
+     */
+    private function DTOtoModel(ProductDTO $dto): Product
+    {
+        $product = new Product(
+            sku: $dto->sku,
+            title: $dto->title,
+            brand: $dto->brand,
+            category: $dto->category,
+            shortDescription: $dto->shortDescription,
+            longDescription: $dto->description,
+            price: $dto->price,
+            image: $dto->image,
+            enabled: $dto->enabled,
+        );
+
+        return $product;
+    }
+
+    /**
+     * Converts product model to DTO object.
+     *
+     * @param Product $product
+     *
+     * @return ProductDTO model converted to DTO for presentation layer
+     */
+    private function modelToDTO(Product $product): ProductDTO
+    {
+        return new ProductDTO(
+            sku: $product->getSku(),
+            title: $product->getTitle(),
+            brand: $product->getBrand(),
+            category: $product->getCategory(),
+            shortDescription: $product->getShortDescription(),
+            description: $product->getLongDescription(),
+            enabled: $product->isEnabled(),
+            price: $product->getPrice(),
+            image: $product->getImage(),
+        );
     }
 }
