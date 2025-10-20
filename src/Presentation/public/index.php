@@ -31,7 +31,7 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 $bootstrap = new Bootstrap();
 $serviceRegistry = $bootstrap->init();
 
-$request = new HttpRequest();
+$request = $serviceRegistry->get(HttpRequest::class);
 
 // get the page name from the URL
 $page = $request->getHttpGet('page') ?? 'list'; // default page is the list

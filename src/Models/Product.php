@@ -265,5 +265,4 @@ class Product
     {
         $this->featured = $featured;
     }
-
 }

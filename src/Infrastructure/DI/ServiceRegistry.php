@@ -32,25 +32,12 @@ class ServiceRegistry
     private PDO $pdo;
 
     /**
-     * @var HttpRequest holds HTTP request information.
-     */
-    private HttpRequest $httpRequest;
-
-    /**
-     * @var HttpResponse holds HTTP response information.
-     */
-    private HttpResponse $httpResponse;
-
-    /**
      * ServiceRegistry constructor.
      *
      * Initializes the registry and registers the default services and repositories.
      */
     public function __construct(PDO $pdo)
     {
-        $this->httpRequest = new HttpRequest();
-        $this->httpResponse = new HttpResponse();
-
         $this->pdo = $pdo;
         $this->registerDefaults();
     }
@@ -64,6 +51,11 @@ class ServiceRegistry
      */
     private function registerDefaults(): void
     {
+        $this->services[HttpRequest::class] = function () { // Closure function stored in asoc. array
+
+            return new HttpRequest();// each time value for key called-> new obj created
+        };
+
         $this->services[IProductRepository::class] = function () { // Closure function stored in asoc. array
 
             return new ProductRepository($this->pdo);// each time value for key called-> new obj created
