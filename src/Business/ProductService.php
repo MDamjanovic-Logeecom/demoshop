@@ -4,7 +4,6 @@ namespace Demoshop\Local\Business;
 
 use Demoshop\Local\Data\IProductRepository;
 use Demoshop\Local\DTO\ProductDTO;
-use Demoshop\Local\Models\Product;
 
 /**
  * Class ProductService
@@ -40,19 +39,11 @@ class ProductService implements IProductService
     /**
      * Retrieves all products from the repository.
      *
-     * @return Product[] Array of Product objects.
+     * @return ProductDTO[] Array of Product objects.
      */
     public function getAll(): array
     {
-        $products = $this->repository->getAll();
-        $productDTOs = [];
-
-        foreach ($products as $product) {
-            $dto = $this->modelToDTO($product);
-            $productDTOs[] = $dto;
-        }
-
-        return $productDTOs;
+        return $this->repository->getAll();
     }
 
     /**
@@ -60,19 +51,11 @@ class ProductService implements IProductService
      *
      * @param string $sku The SKU of the product to retrieve.
      *
-     * @return Product|null The product object.
+     * @return ProductDTO|null The product object.
      */
     public function getBySKU(string $sku): ?ProductDTO
     {
-        $product = $this->repository->getBySKU($sku);
-
-        if ($product) {
-            $dto = $this->modelToDTO($product);
-
-            return $dto;
-        }
-
-        return null;
+        return $this->repository->getBySKU($sku);
     }
 
     /**
@@ -85,7 +68,6 @@ class ProductService implements IProductService
     public function deleteBySKU(string $sku): bool
     {
         if (empty($sku)) {
-
             return false;
         }
 
@@ -97,22 +79,23 @@ class ProductService implements IProductService
      *
      * @param ProductDTO $productDTO Object containing submitted product data (SKU, title, brand, category, etc.).
      *
-     * @return bool True if the product was successfully created, false otherwise.
+     * @return ProductDTO|null DTO if the product was successfully created, null otherwise.
      */
-    public function create(ProductDTO $productDTO): bool
+    public function create(ProductDTO $productDTO): ?ProductDTO
     {
-        $product = $this->DTOtoModel($productDTO);
         $imageData = $formData['image'] ?? null;
 
+        $returnDTO = null;
+
         if ($imageData == null) {
-            return $this->repository->create($product);
+            $returnDTO = $this->repository->create($productDTO);
         }
 
         if ($this->IsImageOkay($imageData)) {
-            return $this->repository->create($product);
+            $returnDTO = $this->repository->create($productDTO);
         }
 
-        return false;
+        return $returnDTO;
     }
 
     /**
@@ -120,22 +103,23 @@ class ProductService implements IProductService
      *
      * @param ProductDTO $productDTO Object of submitted product data (SKU, title, brand, category, etc.).
      *
-     * @return bool True if the product was successfully updated, false otherwise.
+     * @return ProductDTO|null DTO if the product was successfully updated, null otherwise.
      */
-    public function update(ProductDTO $productDTO): bool
+    public function update(ProductDTO $productDTO): ?ProductDTO
     {
-        $product = $this->DTOtoModel($productDTO);
         $imageData = $productDTO->image ?? null;
 
+        $returnDTO = null;
+
         if ($imageData == null) {
-            return $this->repository->update($product);
+            $returnDTO = $this->repository->update($productDTO);
         }
 
         if ($this->IsImageOkay($imageData)) {
-            return $this->repository->update($product);
+            $returnDTO = $this->repository->update($productDTO);
         }
 
-        return false;
+        return $returnDTO;
     }
 
     /**
@@ -174,51 +158,5 @@ class ProductService implements IProductService
         }
 
         return true;
-    }
-
-    /**
-     * Converts product DTO to model object.
-     *
-     * @param ProductDTO $dto Object that contains information from form.
-     *
-     * @return Product dto converted to the project model object
-     */
-    private function DTOtoModel(ProductDTO $dto): Product
-    {
-        $product = new Product(
-            sku: $dto->sku,
-            title: $dto->title,
-            brand: $dto->brand,
-            category: $dto->category,
-            shortDescription: $dto->shortDescription,
-            longDescription: $dto->description,
-            price: $dto->price,
-            image: $dto->image,
-            enabled: $dto->enabled,
-        );
-
-        return $product;
-    }
-
-    /**
-     * Converts product model to DTO object.
-     *
-     * @param Product $product
-     *
-     * @return ProductDTO model converted to DTO for presentation layer
-     */
-    private function modelToDTO(Product $product): ProductDTO
-    {
-        return new ProductDTO(
-            sku: $product->getSku(),
-            title: $product->getTitle(),
-            brand: $product->getBrand(),
-            category: $product->getCategory(),
-            shortDescription: $product->getShortDescription(),
-            description: $product->getLongDescription(),
-            enabled: $product->isEnabled(),
-            price: $product->getPrice(),
-            image: $product->getImage(),
-        );
     }
 }

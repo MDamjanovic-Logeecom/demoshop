@@ -1,7 +1,7 @@
 <?php
 namespace Demoshop\Local\Data;
 
-use Demoshop\Local\Models\Product;
+use Demoshop\Local\DTO\ProductDTO;
 
 /**
  * Interface IProductRepository
@@ -22,9 +22,9 @@ interface IProductRepository
      *
      * @param string $sku The SKU of the product to retrieve.
      *
-     * @return Product The corresponding Product object.
+     * @return ProductDTO|null The corresponding Product object.
      */
-    public function getBySKU(string $sku): Product;
+    public function getBySKU(string $sku): ?ProductDTO;
 
     /**
      * Delete a product by SKU.
@@ -38,18 +38,18 @@ interface IProductRepository
     /**
      * Insert a new product into the database.
      *
-     * @param Product $product The Product object to insert.
+     * @param ProductDTO $product The Product object to insert.
      *
-     * @return bool True if creation was successful, false otherwise.
+     * @return ProductDTO|null DTO if creation was successful.
      */
-    public function create(Product $product): bool;
+    public function create(ProductDTO $product): ?ProductDTO;
 
     /**
      * Update an existing product in the database.
      *
-     * @param Product $product The Product object to update.
+     * @param ProductDTO $product The Product object to update.
      *
-     * @return bool True if update was successful, false otherwise.
+     * @return ProductDTO|null if update was successful.
      */
-    public function update(Product $product): bool;
+    public function update(ProductDTO $product): ?ProductDTO;
 }

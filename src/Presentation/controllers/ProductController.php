@@ -94,7 +94,12 @@ class ProductController
     {
         $productDTO = $this->collectFormData($request);
 
-        $success = $this->service->update($productDTO); // Asks service to update product
+        $returnDTO = $this->service->update($productDTO);
+
+        $success = true;
+        if ($returnDTO == null){
+            $success = false;
+        }
 
         $status = $success ? 'success' : 'error';
         $message = $success ? 'Product edited successfully.' : 'Failed to edit product.'; // For displaying alerts
@@ -117,10 +122,15 @@ class ProductController
     {
         $productDTO = $this->collectFormData($request);
 
-        $success = $this->service->create($productDTO);
+        $returnDTO = $this->service->create($productDTO);
+
+        $success = true;
+        if ($returnDTO == null){
+            $success = false;
+        }
 
         $status = $success ? 'success' : 'error';
-        $message = $success ? 'Product added successfully.' : 'Failed to add product.'; // For displaying alerts
+        $message = $success ? 'Product added successfully.' : 'Failed to add product.';
 
         $response = new HttpResponse();
         $response->setStatusCode(302);

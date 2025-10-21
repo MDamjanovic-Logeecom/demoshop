@@ -2,9 +2,8 @@
 
 namespace Demoshop\Local\Data;
 
-use Demoshop\Local\Infrastructure\Eloquent\EloquentProduct;
-use Demoshop\Local\Models\Product;
-use PDO;
+use Demoshop\Local\Data\Models\EloquentProduct;
+use Demoshop\Local\DTO\ProductDTO;
 
 /**
  * Class ProductRepository
@@ -15,11 +14,7 @@ use PDO;
 class ProductRepository implements IProductRepository
 {
     /**
-     * ProductRepository constructor.
-     *
-     * Establishes a connection to the MySQL database using PDO.
-     * Configuration details (host, database, user, password, charset) are defined here.
-     * Throws an exception and stops execution if the connection fails.
+     * Empty ProductRepository constructor.
      */
     public function __construct()
     {
@@ -31,15 +26,15 @@ class ProductRepository implements IProductRepository
      * Retrieves all rows from the 'products' table and converts them into Product objects.
      * If the 'Image' column contains binary data (BLOB), it is converted to base64.
      *
-     * @return Product[] Array of Product objects.
+     * @return ProductDTO[] Array of ProductDTO objects.
      */
     public function getAll(): array
     {
         $eloquentProducts = EloquentProduct::all(); // Fetch all records
         $products = [];
 
-        foreach ($eloquentProducts as $ep) {
-            $products[] = $this->mapEloquentToModel($ep);
+        foreach ($eloquentProducts as $currentProduct) {
+            $products[] = $this->mapEloquentToDTO($currentProduct);
         }
 
         return $products;
@@ -53,17 +48,17 @@ class ProductRepository implements IProductRepository
      *
      * @param string $sku SKU of the product to fetch.
      *
-     * @return Product The product object corresponding to the given SKU.
+     * @return ProductDTO|null The product object corresponding to the given SKU.
      */
-    public function getBySKU(string $sku): Product
+    public function getBySKU(string $sku): ?ProductDTO
     {
         $eloquentProduct = EloquentProduct::find($sku);
 
         if (!$eloquentProduct) {
-            return false; // Product not found
+            return null;
         }
 
-        return $this->mapEloquentToModel($eloquentProduct);
+        return $this->mapEloquentToDTO($eloquentProduct);
     }
 
     /**
@@ -87,81 +82,86 @@ class ProductRepository implements IProductRepository
     /**
      * Update an existing product in the database.
      *
-     * @param Product $product The product object containing updated data.
+     * @param ProductDTO $product The product object containing updated data.
      *
-     * @return bool whether executed successfully.
+     * @return ProductDTO|null whether executed successfully.
      */
-    public function update(Product $product): bool
+    public function update(ProductDTO $product): ?ProductDTO
     {
-        $eloquentProduct = EloquentProduct::find($product->getSKU());
+        $eloquentProduct = EloquentProduct::find($product->sku);
 
         if (!$eloquentProduct) {
-            return false;
+            return null;
         }
 
-        $eloquentProduct->Title = $product->getTitle();
-        $eloquentProduct->Brand = $product->getBrand();
-        $eloquentProduct->Category = $product->getCategory();
-        $eloquentProduct->Dscrptn = $product->getShortDescription();
-        $eloquentProduct->LDscrptn = $product->getLongDescription();
-        $eloquentProduct->Enabled = $product->isEnabled();
-        $eloquentProduct->Price = $product->getPrice();
+        $eloquentProduct->Title = $product->sku;
+        $eloquentProduct->Brand = $product->brand;
+        $eloquentProduct->Category = $product->category;
+        $eloquentProduct->Dscrptn = $product->shortDescription;
+        $eloquentProduct->LDscrptn = $product->description;
+        $eloquentProduct->Enabled = $product->enabled;
+        $eloquentProduct->Price = $product->price;
 
-        if ($product->getImage() !== null) {
-            $eloquentProduct->Image = $product->getImage();
+        if ($product->image !== null) {
+            $eloquentProduct->Image = $product->image;
         }
 
-        return $eloquentProduct->save();
+        if ($eloquentProduct->save()) {
+            return $this->mapEloquentToDTO($eloquentProduct);
+        }
+
+        return null;
     }
 
     /**
      * Insert a new product into the database.
      *
-     * @param Product $product The product object to insert.
+     * @param ProductDTO $product The product object to insert.
      *
-     * @return bool whether executed successfully.
+     * @return ProductDTO|null whether executed successfully.
      */
-    public function create(Product $product): bool
+    public function create(ProductDTO $product): ?ProductDTO
     {
         $eloquentProduct = new EloquentProduct([
-            'SKU' => $product->getSku(),
-            'Title' => $product->getTitle(),
-            'Brand' => $product->getBrand(),
-            'Category' => $product->getCategory(),
-            'Dscrptn' => $product->getShortDescription(),
-            'LDscrptn' => $product->getLongDescription(),
-            'Price' => $product->getPrice(),
-            'Enabled' => $product->isEnabled(),
-            'Image' => $product->getImage()
+            'SKU' => $product->sku,
+            'Title' => $product->title,
+            'Brand' => $product->brand,
+            'Category' => $product->category,
+            'Dscrptn' => $product->shortDescription,
+            'LDscrptn' => $product->description,
+            'Price' => $product->price,
+            'Enabled' => $product->enabled,
+            'Image' => $product->image,
         ]);
 
-        return $eloquentProduct->save();
+        if ($eloquentProduct->save()) {
+            return $this->mapEloquentToDTO($eloquentProduct);
+        }
+
+        return null;
     }
 
     /**
      * Maps a row from the table and maps it to a Product model object.
      *
-     * @param EloquentProduct $ep from the database.
+     * @param EloquentProduct $eloquentProduct from the database.
      *
-     * @return Product object extracted from row.
+     * @return ProductDTO object extracted from row.
      */
-    private function mapEloquentToModel(EloquentProduct $ep): Product
+    private function mapEloquentToDTO(EloquentProduct $eloquentProduct): ProductDTO
     {
-        $imageData = null;
-        if (!empty($ep->Image)) {
-            $imageData = 'data:image/jpeg;base64,' . base64_encode($ep->Image);
-        }
+        $imageData = $eloquentProduct->Image ? 'data:image/jpeg;base64,' . base64_encode($eloquentProduct->Image) : null;
 
-        return new Product(
-            sku: $ep->SKU,
-            title: $ep->Title,
-            brand: $ep->Brand,
-            category: $ep->Category,
-            shortDescription: $ep->Dscrptn,
-            longDescription: $ep->LDscrptn,
-            price: $ep->Price,
+        return new ProductDTO(
+            sku: $eloquentProduct->SKU,
+            title: $eloquentProduct->Title,
+            brand: $eloquentProduct->Brand,
+            category: $eloquentProduct->Category,
+            shortDescription: $eloquentProduct->Dscrptn,
+            description: $eloquentProduct->LDscrptn,
+            enabled: $eloquentProduct->Enabled,
+            price: $eloquentProduct->Price,
             image: $imageData,
-            enabled: (bool)$ep->Enabled
         );
     }
 }

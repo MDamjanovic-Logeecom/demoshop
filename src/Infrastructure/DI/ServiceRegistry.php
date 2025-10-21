@@ -7,7 +7,6 @@ use Demoshop\Local\Business\ProductService;
 use Demoshop\Local\Data\IProductRepository;
 use Demoshop\Local\Data\ProductRepository;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
-use PDO;
 
 /**
  * Class ServiceRegistry

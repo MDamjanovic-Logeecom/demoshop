@@ -3,7 +3,6 @@
 namespace Demoshop\Local\Business;
 
 use Demoshop\Local\DTO\ProductDTO;
-use Demoshop\Local\Models\Product;
 
 /**
  * Interface IProductService
@@ -17,7 +16,7 @@ interface IProductService
     /**
      * Retrieve all products.
      *
-     * @return array An array of Product objects.
+     * @return array An array of ProductDTO objects.
      */
     public function getAll(): array;
 
@@ -26,7 +25,7 @@ interface IProductService
      *
      * @param string $sku The SKU of the product to retrieve.
      *
-     * @return Product|null The product object corresponding to the SKU.
+     * @return ProductDTO|null The product object corresponding to the SKU.
      */
     public function getBySKU(string $sku): ?ProductDTO;
 
@@ -43,15 +42,15 @@ interface IProductService
      * Create a new product.
      *
      * @param ProductDTO $productDTO
-     * @return bool True on success, false on failure.
+     * @return ProductDTO|null DTO on success, null on failure.
      */
-    public function create(ProductDTO $productDTO): bool;
+    public function create(ProductDTO $productDTO): ?ProductDTO;
 
     /**
      * Update an existing product.
      *
      * @param ProductDTO $productDTO
-     * @return bool True on success, false on failure.
+     * @return ProductDTO|null DTO on success, null on failure.
      */
-    public function update(ProductDTO $productDTO): bool;
+    public function update(ProductDTO $productDTO): ?ProductDTO;
 }

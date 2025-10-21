@@ -1,6 +1,6 @@
 <?php
 
-namespace Demoshop\Local\Infrastructure\Eloquent;
+namespace Demoshop\Local\Data\Models;
 
 use Illuminate\Database\Eloquent\Model;
 

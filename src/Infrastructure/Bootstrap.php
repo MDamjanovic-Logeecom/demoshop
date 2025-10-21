@@ -4,7 +4,6 @@ namespace Demoshop\Local\Infrastructure;
 
 use Demoshop\Local\Infrastructure\DI\ServiceRegistry;
 use Dotenv\Dotenv;
-use PDO;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 /**
