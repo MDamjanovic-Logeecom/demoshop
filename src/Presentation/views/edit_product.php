@@ -53,7 +53,7 @@
                     <label>Enabled in Shop</label>
                 </div>
                 <div class="checkbox-group">
-                    <input type="checkbox" name="featured" <?= $product->featured ? 'checked' : '' ?>>
+                    <input type="checkbox" name="featured" <?= $product->enabled ? 'checked' : '' ?>> <!-- for now until featured introduced /!-->
                     <label>Featured</label>
                 </div>
             </div>

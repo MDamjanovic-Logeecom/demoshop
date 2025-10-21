@@ -2,10 +2,9 @@
 
 namespace Demoshop\Local\Data;
 
+use Demoshop\Local\Infrastructure\Eloquent\EloquentProduct;
 use Demoshop\Local\Models\Product;
-use Exception;
 use PDO;
-use PDOException;
 
 /**
  * Class ProductRepository
@@ -16,20 +15,14 @@ use PDOException;
 class ProductRepository implements IProductRepository
 {
     /**
-     * @var PDO The PDO instance for database connection.
-     */
-    private PDO $pdo;
-
-    /**
      * ProductRepository constructor.
      *
      * Establishes a connection to the MySQL database using PDO.
      * Configuration details (host, database, user, password, charset) are defined here.
      * Throws an exception and stops execution if the connection fails.
      */
-    public function __construct(PDO $pdo)
+    public function __construct()
     {
-        $this->pdo = $pdo;
     }
 
     /**
@@ -42,16 +35,11 @@ class ProductRepository implements IProductRepository
      */
     public function getAll(): array
     {
+        $eloquentProducts = EloquentProduct::all(); // Fetch all records
         $products = [];
 
-        try {
-            $stmt = $this->pdo->query("SELECT * FROM products");
-
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $products[] = $this->mapRowToProduct($row);
-            }
-        } catch (PDOException $e) {
-            echo "Query failed: " . $e->getMessage();
+        foreach ($eloquentProducts as $ep) {
+            $products[] = $this->mapEloquentToModel($ep);
         }
 
         return $products;
@@ -69,17 +57,13 @@ class ProductRepository implements IProductRepository
      */
     public function getBySKU(string $sku): Product
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM products WHERE SKU = :sku");
-        $stmt->bindParam(':sku', $sku);
-        $stmt->execute();
+        $eloquentProduct = EloquentProduct::find($sku);
 
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$row) {
-            return false;
+        if (!$eloquentProduct) {
+            return false; // Product not found
         }
 
-        return $this->mapRowToProduct($row);
+        return $this->mapEloquentToModel($eloquentProduct);
     }
 
     /**
@@ -91,18 +75,13 @@ class ProductRepository implements IProductRepository
      */
     public function deleteBySKU(string $sku): bool
     {
-        try {
-            $stmt = $this->pdo->prepare("DELETE FROM products WHERE SKU = :sku");
-            $stmt->bindParam(':sku', $sku);
-            $stmt->execute();
+        $eloquentProduct = EloquentProduct::find($sku);
 
-            return $stmt->rowCount() > 0;
-
-        } catch (PDOException $e) {
-            echo "Delete failed: " . $e->getMessage();
-
+        if (!$eloquentProduct) {
             return false;
         }
+
+        return $eloquentProduct->delete();
     }
 
     /**
@@ -110,51 +89,29 @@ class ProductRepository implements IProductRepository
      *
      * @param Product $product The product object containing updated data.
      *
-     * @return bool True if update succeeds, false if an exception occurs.
+     * @return bool whether executed successfully.
      */
     public function update(Product $product): bool
     {
-        try {
-            // Base SQL query (without image yet)
-            $sql = "UPDATE products
-                SET Title = :title,
-                    Brand = :brand,
-                    Category = :category,
-                    Dscrptn = :sdescription,
-                    LDscrptn = :ldescription,
-                    Enabled = :enabled,
-                    Price = :price";
+        $eloquentProduct = EloquentProduct::find($product->getSKU());
 
-            $params = [
-                ':title' => $product->getTitle(),
-                ':brand' => $product->getBrand(),
-                ':category' => $product->getCategory(),
-                ':sdescription' => $product->getShortDescription(),
-                ':ldescription' => $product->getLongDescription(),
-                ':enabled' => (int)$product->isEnabled(),
-                ':sku' => $product->getSku(),
-                ':price' => $product->getPrice()
-            ];
-
-            $imageData = $product->getImage();
-
-            if ($imageData !== null) {
-                $sql .= ", Image = :image";
-                $params[':image'] = $imageData;
-            }
-
-            $sql .= " WHERE SKU = :sku";
-
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($params);
-
-            return true;
-
-        } catch (PDOException $e) {
-            echo "Update failed: " . $e->getMessage();
-
+        if (!$eloquentProduct) {
             return false;
         }
+
+        $eloquentProduct->Title = $product->getTitle();
+        $eloquentProduct->Brand = $product->getBrand();
+        $eloquentProduct->Category = $product->getCategory();
+        $eloquentProduct->Dscrptn = $product->getShortDescription();
+        $eloquentProduct->LDscrptn = $product->getLongDescription();
+        $eloquentProduct->Enabled = $product->isEnabled();
+        $eloquentProduct->Price = $product->getPrice();
+
+        if ($product->getImage() !== null) {
+            $eloquentProduct->Image = $product->getImage();
+        }
+
+        return $eloquentProduct->save();
     }
 
     /**
@@ -162,74 +119,49 @@ class ProductRepository implements IProductRepository
      *
      * @param Product $product The product object to insert.
      *
-     * @return bool True on success, false on failure.
+     * @return bool whether executed successfully.
      */
     public function create(Product $product): bool
     {
-        try {
-            $sql = "INSERT INTO products (SKU, Title, Brand, Category, Dscrptn, LDscrptn, Enabled, Price";
+        $eloquentProduct = new EloquentProduct([
+            'SKU' => $product->getSku(),
+            'Title' => $product->getTitle(),
+            'Brand' => $product->getBrand(),
+            'Category' => $product->getCategory(),
+            'Dscrptn' => $product->getShortDescription(),
+            'LDscrptn' => $product->getLongDescription(),
+            'Price' => $product->getPrice(),
+            'Enabled' => $product->isEnabled(),
+            'Image' => $product->getImage()
+        ]);
 
-            $params = [
-                ':sku' => $product->getSku(),
-                ':title' => $product->getTitle(),
-                ':brand' => $product->getBrand(),
-                ':category' => $product->getCategory(),
-                ':sdescription' => $product->getShortDescription(),
-                ':ldescription' => $product->getLongDescription(),
-                ':enabled' => (int)$product->isEnabled(),
-                ':price' => $product->getPrice()
-            ];
-
-            // If image is uploaded, convert to BLOB and include in SQL
-            if (isset($_FILES['image']['tmp_name']) && is_uploaded_file($_FILES['image']['tmp_name'])) {
-                $sql .= ", Image";
-                $params[':image'] = file_get_contents($_FILES['image']['tmp_name']);
-            }
-
-            $sql .= ") VALUES (:sku, :title, :brand, :category, :sdescription, :ldescription, :enabled, :price";
-
-            if (isset($params[':image'])) {
-                $sql .= ", :image";
-            }
-
-            $sql .= ")";
-
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($params);
-
-            return true;
-
-        } catch (PDOException $e) {
-            echo "Insert failed: " . $e->getMessage();
-
-            return false;
-        }
+        return $eloquentProduct->save();
     }
 
     /**
      * Maps a row from the table and maps it to a Product model object.
      *
-     * @param array $row from the database.
+     * @param EloquentProduct $ep from the database.
      *
      * @return Product object extracted from row.
      */
-    private function mapRowToProduct(array $row): Product
+    private function mapEloquentToModel(EloquentProduct $ep): Product
     {
         $imageData = null;
-        if (!empty($row['Image'])) {
-            $imageData = 'data:image/jpeg;base64,' . base64_encode($row['Image']);
+        if (!empty($ep->Image)) {
+            $imageData = 'data:image/jpeg;base64,' . base64_encode($ep->Image);
         }
 
         return new Product(
-            sku: $row['SKU'],
-            title: $row['Title'],
-            brand: $row['Brand'],
-            category: $row['Category'],
-            shortDescription: $row['Dscrptn'] ?? null,
-            longDescription: $row['LDscrptn'] ?? null,
-            price: (float)$row['Price'],
+            sku: $ep->SKU,
+            title: $ep->Title,
+            brand: $ep->Brand,
+            category: $ep->Category,
+            shortDescription: $ep->Dscrptn,
+            longDescription: $ep->LDscrptn,
+            price: $ep->Price,
             image: $imageData,
-            enabled: (bool)$row['Enabled'],
+            enabled: (bool)$ep->Enabled
         );
     }
 }

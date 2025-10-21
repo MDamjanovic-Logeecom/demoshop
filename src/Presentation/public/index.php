@@ -93,6 +93,4 @@ switch ($page) {
         $response = $controller->getAllProducts($request);
         $response->send(); // This will include the view and pass $products
         break;
-
 }
-
