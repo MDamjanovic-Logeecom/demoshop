@@ -94,7 +94,7 @@ class ProductRepository implements IProductRepository
             return null;
         }
 
-        $eloquentProduct->Title = $product->sku;
+        $eloquentProduct->Title = $product->title;
         $eloquentProduct->Brand = $product->brand;
         $eloquentProduct->Category = $product->category;
         $eloquentProduct->Dscrptn = $product->shortDescription;

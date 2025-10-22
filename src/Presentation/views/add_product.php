@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Edit Product</title>
-    <link rel="stylesheet" href="css/add_product.css">
+    <link rel="stylesheet" href="/src/Presentation/public/css/add_product.css">
 </head>
 <body>
 <div class="container">
     <h2>Product Details</h2>
-    <form action="index.php?page=add" method="post" enctype="multipart/form-data">
+    <form action="/admin/products/create" method="post" enctype="multipart/form-data">
         <div class="form-grid">
             <div class="left-side">
                 <div class="form-group">
@@ -71,7 +71,7 @@
         </div>
     </form>
 </div>
-<script src="js/add_edit_form.js"></script>
+<script src="/src/Presentation/public/js/add_edit_form.js"></script>
 </body>
 </html>
 

@@ -78,7 +78,7 @@ class ProductController
 
         // Redirect using HttpResponse with message in URL (will be cleared in message.js)
         $response->setStatusCode(302);
-        $response->setHeader('Location', "/index.php?page=list&status={$status}&message=" . urlencode($message));
+        $response->setHeader('Location', "/admin/products?status={$status}&message=" . urlencode($message));
 
         return $response;
     }
@@ -97,7 +97,7 @@ class ProductController
         $returnDTO = $this->service->update($productDTO);
 
         $success = true;
-        if ($returnDTO == null){
+        if ($returnDTO == null) {
             $success = false;
         }
 
@@ -106,7 +106,7 @@ class ProductController
 
         $response = new HttpResponse();
         $response->setStatusCode(302); // redirect after POST
-        $response->setHeader('Location', "/index.php?page=list&status={$status}&message=" . urlencode($message));
+        $response->setHeader('Location', "/admin/products?status={$status}&message=" . urlencode($message));
 
         return $response;
     }
@@ -125,7 +125,7 @@ class ProductController
         $returnDTO = $this->service->create($productDTO);
 
         $success = true;
-        if ($returnDTO == null){
+        if ($returnDTO == null) {
             $success = false;
         }
 
@@ -134,7 +134,7 @@ class ProductController
 
         $response = new HttpResponse();
         $response->setStatusCode(302);
-        $response->setHeader('Location', "/index.php?page=list&status={$status}&message=" . urlencode($message));
+        $response->setHeader('Location', "/admin/products?status={$status}&message=" . urlencode($message));
 
         return $response;
     }

@@ -7,18 +7,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Edit Product</title>
-    <link rel="stylesheet" href="css/add_product.css">
+    <link rel="stylesheet" href="/src/Presentation/public/css/add_product.css">
 </head>
 <body>
 <div class="container">
     <h2>Product Details</h2>
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" action="/admin/products/<?= htmlspecialchars($product->sku) ?>">
         <div class="form-grid">
             <div class="left-side">
                 <div class="form-group">
                     <label>SKU:</label>
-                    <input type="text" name="sku" value="<?= htmlspecialchars($product->sku) ?>">  <!-- It's red, but it autoloaded and works. -->
-                </div>                                                                                  <!-- I'll add the @var at the top for now..' -->
+                    <input type="text" name="sku" value="<?= htmlspecialchars($product->sku) ?>">
+                </div>
                 <div class="form-group">
                     <label>Title:</label>
                     <input type="text" name="title" value="<?= htmlspecialchars($product->title) ?>">
@@ -77,7 +77,7 @@
         </div>
     </form>
 </div>
-<script src="js/add_edit_form.js"></script>
+<script src="/src/Presentation/public/js/add_edit_form.js"></script>
 </body>
 </html>
 

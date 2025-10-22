@@ -10,7 +10,7 @@ $products = $products ?? [];
 <head>
     <meta charset="UTF-8">
     <title>Demo Shop - Main Page</title>
-    <link rel="stylesheet" href="css/products_list.css">
+    <link rel="stylesheet" href="/src/Presentation/public/css/products_list.css">
 </head>
 <body>
 
@@ -30,7 +30,7 @@ $products = $products ?? [];
         <!-- Inside buttons -->
         <div class="box-buttons">
             <div class="left-buttons">
-                <button type="button" onclick="window.location.href='index.php?page=add'">Add new product</button>
+                <button type="button" onclick="window.location.href='/admin/products/create'">Add new product</button>
                 <button>Delete selected</button>
                 <button>Enable selected</button>
                 <button>Disable selected</button>
@@ -76,14 +76,13 @@ $products = $products ?? [];
                             onchange="toggleEnabled(<?= $index ?>, this.checked)">
                 </td>
                 <td class="button-cell">
-                    <form action="index.php?" method="get" style="display:inline;">
-                        <input type="hidden" name="page" value="edit">
-                        <input type="hidden" name="sku" value="<?= htmlspecialchars($product->sku) ?>">
+                    <form action="/admin/products/<?= htmlspecialchars($product->sku) ?>" method="get"
+                          style="display:inline;">
                         <button type="submit">Edit</button>
                     </form>
                 </td>
                 <td class="button-cell">
-                    <form action="index.php?page=delete" method="post" style="display:inline;"
+                    <form action="/admin/products/delete" method="post" style="display:inline;"
                           onsubmit="return confirm('Are you sure you want to delete <?= htmlspecialchars($product->title) ?>?');">
                         <input type="hidden" name="delete_sku" value="<?= htmlspecialchars($product->sku) ?>">
                         <button type="submit">Delete</button>
@@ -104,6 +103,6 @@ $products = $products ?? [];
         </div>
     </div>
 </div>
-<script src="js/message.js"></script>
+<script src="/src/Presentation/public/js/message.js"></script>
 </body>
 </html>
