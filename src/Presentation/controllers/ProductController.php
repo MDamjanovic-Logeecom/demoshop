@@ -4,8 +4,10 @@ namespace Demoshop\Local\Presentation\controllers;
 
 use Demoshop\Local\Business\IProductService;
 use Demoshop\Local\DTO\ProductDTO;
+use Demoshop\Local\Infrastructure\http\HtmlResponse;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
-use Demoshop\Local\Infrastructure\http\HttpResponse;
+use Demoshop\Local\Infrastructure\http\RedirectResponse;
+use Demoshop\Local\Infrastructure\http\ErrorResponse;
 
 /**
  * Class ProductController
@@ -36,18 +38,12 @@ class ProductController
      *
      * @param HttpRequest $request HTTP request object
      *
-     * @return HttpResponse Response containing status, headers, and view with data
+     * @return HtmlResponse Response containing status, headers, and view with data
      */
-    public function getAllProducts(HttpRequest $request): HttpResponse
+    public function getAllProducts(HttpRequest $request): HtmlResponse
     {
         $products = $this->service->getAll();
-
-        $response = new HttpResponse();
-        $response->setStatusCode(200);
-        $response->setBody([
-            'view' => 'products_list.php',
-            'products' => $products
-        ]);
+        $response = new HtmlResponse('products_list.php', ['products' => $products], 200);
 
         return $response;
     }
@@ -57,16 +53,12 @@ class ProductController
      *
      * @param HttpRequest $request The HTTP request object containing POST data
      *
-     * @return HttpResponse HTTP response indicating the result of the deletion.
+     * @return RedirectResponse|ErrorResponse HTTP response indicating the result of the deletion.
      */
-    public function deleteProductBySKU(HttpRequest $request): HttpResponse
+    public function deleteProductBySKU(HttpRequest $request): RedirectResponse|ErrorResponse
     {
-        $response = new HttpResponse();
-
         if (!$request->isPost() || $request->getHttpPost('delete_sku') === null) {
-            $response->setStatusCode(405); // If request method is not POST (S.C. method not allowed)
-
-            return $response;
+            return new ErrorResponse('Invalid request method or missing SKU.', 405); // 405 = Method Not Allowed
         }
 
         // If request is POST
@@ -76,11 +68,8 @@ class ProductController
         $status = $deleted ? 'success' : 'error';
         $message = $deleted ? 'Product deleted successfully' : 'Failed to delete product';
 
-        // Redirect using HttpResponse with message in URL (will be cleared in message.js)
-        $response->setStatusCode(302);
-        $response->setHeader('Location', "/admin/products?status={$status}&message=" . urlencode($message));
-
-        return $response;
+        $redirectUrl = "/admin/products?status={$status}&message=" . urlencode($message);
+        return new RedirectResponse($redirectUrl);
     }
 
     /**
@@ -88,9 +77,9 @@ class ProductController
      *
      * @param HttpRequest $request The HTTP request object containing POST data and files
      *
-     * @return HttpResponse HTTP response indicating the result of the edit.
+     * @return RedirectResponse HTTP response indicating the result of the edit.
      */
-    public function editProduct(HttpRequest $request): HttpResponse
+    public function editProduct(HttpRequest $request): RedirectResponse
     {
         $productDTO = $this->collectFormData($request);
 
@@ -104,11 +93,9 @@ class ProductController
         $status = $success ? 'success' : 'error';
         $message = $success ? 'Product edited successfully.' : 'Failed to edit product.'; // For displaying alerts
 
-        $response = new HttpResponse();
-        $response->setStatusCode(302); // redirect after POST
-        $response->setHeader('Location', "/admin/products?status={$status}&message=" . urlencode($message));
+        $redirectUrl = "/admin/products?status={$status}&message=" . urlencode($message);
 
-        return $response;
+        return new RedirectResponse($redirectUrl);
     }
 
     /**
@@ -116,9 +103,9 @@ class ProductController
      *
      * @param HttpRequest $request The HTTP request object containing POST data and uploaded files.
      *
-     * @return HttpResponse HTTP response object for redirection after creation.
+     * @return RedirectResponse HTTP response object for redirection after creation.
      */
-    public function addProduct(HttpRequest $request): HttpResponse
+    public function addProduct(HttpRequest $request): RedirectResponse
     {
         $productDTO = $this->collectFormData($request);
 
@@ -132,11 +119,9 @@ class ProductController
         $status = $success ? 'success' : 'error';
         $message = $success ? 'Product added successfully.' : 'Failed to add product.';
 
-        $response = new HttpResponse();
-        $response->setStatusCode(302);
-        $response->setHeader('Location', "/admin/products?status={$status}&message=" . urlencode($message));
+        $redirectUrl = "/admin/products?status={$status}&message=" . urlencode($message);
 
-        return $response;
+        return new RedirectResponse($redirectUrl);
     }
 
     /**
@@ -147,44 +132,35 @@ class ProductController
      *
      * @param HttpRequest $request
      *
-     * @return HttpResponse The HTTP response.
+     * @return HtmlResponse|ErrorResponse The HTmlResponse.
      */
-    public function showEditForm(HttpRequest $request): HttpResponse
+    public function showEditForm(HttpRequest $request): HtmlResponse|ErrorResponse
     {
-        $response = new HttpResponse();
         $sku = $request->getHttpGet('sku') ?? $request->getRouteParam('sku') ?? null;
 
         if (!$sku) {
-            $response->setStatusCode(400);
-            $response->setBody('No SKU provided.');
-
-            return $response;
+            return new ErrorResponse('No SKU provided.', 400); // 400 Bad Request
         }
 
         $productDTO = $this->service->getBySKU($sku);
 
         if (!$productDTO) {
-            $response->setStatusCode(404);
-            $response->setBody('Product not found.');
-
-            return $response;
+            return new ErrorResponse('Product not found.', 404); // 404 Not Found
         }
 
-        // Instead of rendering directly, the product is stored in response content
-        // which can be later used by the router
-        $response->setStatusCode(200);
-        $response->setBody(['view' => 'edit_product.php', 'product' => $productDTO]);
-
-        return $response;
+        return new HtmlResponse('edit_product.php', ['product' => $productDTO], 200);
     }
 
-    public function showAddForm(HttpRequest $request): HttpResponse
+    /**
+     * Returns the create product form
+     *
+     * @param HttpRequest $request
+     *
+     * @return HtmlResponse (HtmlResponse)
+     */
+    public function showAddForm(HttpRequest $request): HtmlResponse
     {
-        $response = new HttpResponse();
-        $response->setStatusCode(200);
-        $response->setBody(['view' => 'add_product.php']);
-
-        return $response;
+        return new HtmlResponse('add_product.php');
     }
 
     /**

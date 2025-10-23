@@ -18,8 +18,8 @@ $serviceRegistry = $bootstrap->init();
 $router = new Router();
 
 // Load routes
-$routes = require_once __DIR__ . '/src/Infrastructure/routers/routes.php';
-$router->initialize($routes);
+$routes = require_once __DIR__ . '/src/Presentation/routes.php';
+$router->initialize($routes, 'Demoshop\\Local\\Presentation\\controllers');
 
 // Run the app (router takes care of everything)
 $router->dispatch($serviceRegistry->get(HttpRequest::class), $serviceRegistry);
