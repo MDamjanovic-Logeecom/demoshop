@@ -21,6 +21,9 @@ class HttpRequest
     /** @var array Stores server information */
     private array $server;
 
+    /** @var array Stores parameters of the url */
+    private array $routeParams = [];
+
     /**
      * HttpRequest constructor.
      *
@@ -106,5 +109,24 @@ class HttpRequest
     public function isPost(): bool
     {
         return strtoupper($this->getServer('REQUEST_METHOD', 'GET')) === 'POST';
+    }
+
+    /**
+     * @param array $params required for the target function
+     * @return void
+     */
+    public function setRouteParams(array $params): void
+    {
+        $this->routeParams = $params;
+    }
+
+    /**
+     * @param string $key
+     * @param mixed|null $default
+     * @return mixed
+     */
+    public function getRouteParam(string $key, mixed $default = null): mixed
+    {
+        return $this->routeParams[$key] ?? $default;
     }
 }

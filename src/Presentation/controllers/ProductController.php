@@ -145,13 +145,14 @@ class ProductController
      * Fetches the product by SKU. Does not render the form view directly.
      * Instead, the product data and view filename are stored in the response body.
      *
-     * @param string|null $sku The SKU of the product to edit; nullable for safety
+     * @param HttpRequest $request
      *
      * @return HttpResponse The HTTP response.
      */
-    public function showEditForm(?string $sku): HttpResponse
+    public function showEditForm(HttpRequest $request): HttpResponse
     {
         $response = new HttpResponse();
+        $sku = $request->getHttpGet('sku') ?? $request->getRouteParam('sku') ?? null;
 
         if (!$sku) {
             $response->setStatusCode(400);
@@ -170,9 +171,18 @@ class ProductController
         }
 
         // Instead of rendering directly, the product is stored in response content
-        // which can be later used by the index file
+        // which can be later used by the router
         $response->setStatusCode(200);
         $response->setBody(['view' => 'edit_product.php', 'product' => $productDTO]);
+
+        return $response;
+    }
+
+    public function showAddForm(HttpRequest $request): HttpResponse
+    {
+        $response = new HttpResponse();
+        $response->setStatusCode(200);
+        $response->setBody(['view' => 'add_product.php']);
 
         return $response;
     }

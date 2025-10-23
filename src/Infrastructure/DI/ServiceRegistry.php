@@ -7,6 +7,7 @@ use Demoshop\Local\Business\ProductService;
 use Demoshop\Local\Data\IProductRepository;
 use Demoshop\Local\Data\ProductRepository;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
+use Demoshop\Local\Presentation\controllers\ProductController;
 
 /**
  * Class ServiceRegistry
@@ -41,7 +42,7 @@ class ServiceRegistry
      * instantiate the concrete implementations. Lazy loading is used,
      * so the service/repository is only created when requested.
      */
-    private function registerDefaults(): void
+    private function registerDefaults(): void //todo
     {
         $this->services[HttpRequest::class] = function () { // Closure function stored in asoc. array
 
@@ -57,6 +58,12 @@ class ServiceRegistry
             $repository = $this->get(IProductRepository::class);
 
             return new ProductService($repository); // For now, returns the only concrete class there is
+        };
+
+        $this->services[ProductController::class] = function () {
+            $service = $this->get(IProductService::class);
+
+            return new ProductController($service);
         };
     }
 

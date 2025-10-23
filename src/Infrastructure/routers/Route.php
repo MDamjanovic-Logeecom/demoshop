@@ -5,7 +5,7 @@ namespace Demoshop\Local\Infrastructure\routers;
 use Closure;
 
 /**
- * Route class that contains HTTP method, path/url, and the required runnable closure
+ * Route class that contains HTTP method, path/url, and the target function
  */
 class Route
 {
@@ -18,16 +18,16 @@ class Route
      */
     public string $url;
     /**
-     * @var Closure that does the redirecting and logic
+     * @var String that leads to the route function, ex: 'ProductController::getAllProducts'
      */
-    public Closure $target;
+    public string $target;
 
     /**
      * @param string $method
      * @param string $url
-     * @param Closure $target
+     * @param String $target
      */
-    public function __construct(string $method, string $url, Closure $target)
+    public function __construct(string $method, string $url, string $target)
     {
         $this->method = strtoupper($method);
         $this->url = $url;

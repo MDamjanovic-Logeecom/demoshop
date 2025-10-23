@@ -46,7 +46,7 @@
                 <div class="form-group">
                     <label>Description:</label>
                     <textarea
-                            name="description"><?= htmlspecialchars($product->longDescription ?? '') ?></textarea>
+                            name="description"><?= htmlspecialchars($product->description ?? '') ?></textarea>
                 </div>
                 <div class="checkbox-group">
                     <input type="checkbox" name="enabled" <?= $product->enabled ? 'checked' : '' ?>>
