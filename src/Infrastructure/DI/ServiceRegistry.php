@@ -2,13 +2,6 @@
 
 namespace Demoshop\Local\Infrastructure\DI;
 
-use Demoshop\Local\Business\IProductService;
-use Demoshop\Local\Business\ProductService;
-use Demoshop\Local\Data\IProductRepository;
-use Demoshop\Local\Data\ProductRepository;
-use Demoshop\Local\Infrastructure\http\HttpRequest;
-use Demoshop\Local\Presentation\controllers\ProductController;
-
 /**
  * Class ServiceRegistry
  *
@@ -26,45 +19,16 @@ class ServiceRegistry
     private array $services = [];
 
     /**
-     * ServiceRegistry constructor.
+     * Registers class names and the closures that return the class object
      *
-     * Initializes the registry and registers the default services and repositories.
-     */
-    public function __construct()
-    {
-        $this->registerDefaults();
-    }
-
-    /**
-     * Registers default service and repository closure functions.
+     * @param string $className of the wanted class
+     * @param callable $factory closure that creates the class object
      *
-     * This method maps interface names to closures that know how to
-     * instantiate the concrete implementations. Lazy loading is used,
-     * so the service/repository is only created when requested.
+     * @return void
      */
-    private function registerDefaults(): void //todo
+    public function register(string $className, callable $factory): void
     {
-        $this->services[HttpRequest::class] = function () { // Closure function stored in asoc. array
-
-            return new HttpRequest();// each time value for key called-> new obj created
-        };
-
-        $this->services[IProductRepository::class] = function () { // Closure function stored in asoc. array
-
-            return new ProductRepository();// each time value for key called-> new obj created
-        };
-
-        $this->services[IProductService::class] = function () {
-            $repository = $this->get(IProductRepository::class);
-
-            return new ProductService($repository); // For now, returns the only concrete class there is
-        };
-
-        $this->services[ProductController::class] = function () {
-            $service = $this->get(IProductService::class);
-
-            return new ProductController($service);
-        };
+        $this->services[$className] = $factory;
     }
 
     /**
