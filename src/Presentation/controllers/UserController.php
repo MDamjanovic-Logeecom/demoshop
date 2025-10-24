@@ -1,0 +1,62 @@
+<?php
+
+namespace Demoshop\Local\Presentation\controllers;
+
+use Demoshop\Local\Business\IUserService;
+use Demoshop\Local\Infrastructure\http\ErrorResponse;
+use Demoshop\Local\Infrastructure\http\HtmlResponse;
+use Demoshop\Local\Infrastructure\http\HttpRequest;
+use Demoshop\Local\Infrastructure\http\RedirectResponse;
+
+class UserController
+{
+    private IUserService $service;
+
+    public function __construct(IUserService $service)
+    {
+        $this->service = $service;
+    }
+
+    public function register(HttpRequest $request): RedirectResponse|ErrorResponse
+    {
+        $headerKey = $request->getServer('REGISTRATION_KEY', '');
+        $expectedKey = $_ENV['REGISTRATION_KEY'] ?? '';
+
+        if ($headerKey !== $expectedKey) {
+            return new ErrorResponse('/error?msg=invalid_registration_key', 403);
+        }
+
+        $username = $request->getHttpPost('username');
+        $password = $request->getHttpPost('password');
+
+        $user = $this->service->register($username, $password);
+
+        if ($user) {
+            return new RedirectResponse('/success');
+        }
+
+        return new ErrorResponse('/error?msg=registration_failed', 400);
+    }
+
+    public function login(HttpRequest $request): RedirectResponse
+    {
+        $username = $request->getHttpPost('username');
+        $password = $request->getHttpPost('password');
+
+        $user = $this->service->login($username, $password);
+
+        if ($user) {
+            return new RedirectResponse('/admin/products');
+        }
+
+        $redirectUrl = "/admin?message=" . urlencode('Incorrect credentials.');
+
+        return new RedirectResponse($redirectUrl);
+    }
+
+    public function showLoginPage(HttpRequest $request): HtmlResponse
+    {
+        $message = $request->getHttpGet('message', '');
+        return new HtmlResponse('login.php', ['message' => $message]);
+    }
+}

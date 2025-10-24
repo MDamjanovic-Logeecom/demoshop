@@ -21,4 +21,7 @@ return [
     new Route('GET',  '/admin/products/{sku}',    'ProductController::showEditForm'),
     new Route('POST', '/admin/products/{sku}',    'ProductController::editProduct'),
     new Route('GET',  '/',                        'ProductController::getAllProducts'), //for now, redirects to product list page
+    new Route('POST', '/register',                'UserController::register'),
+    new Route('GET',  '/admin',                   'UserController::showLoginPage'),
+    new Route('POST', '/admin',                   'UserController::login'),
 ];

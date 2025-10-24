@@ -3,12 +3,17 @@
 namespace Demoshop\Local\Bootstrap;
 
 use Demoshop\Local\Business\IProductService;
+use Demoshop\Local\Business\IUserService;
 use Demoshop\Local\Business\ProductService;
+use Demoshop\Local\Business\UserService;
 use Demoshop\Local\Data\IProductRepository;
+use Demoshop\Local\Data\IUserRepository;
 use Demoshop\Local\Data\ProductRepository;
+use Demoshop\Local\Data\UserRepository;
 use Demoshop\Local\Infrastructure\DI\ServiceRegistry;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Presentation\controllers\ProductController;
+use Demoshop\Local\Presentation\controllers\UserController;
 use Dotenv\Dotenv;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
@@ -85,6 +90,11 @@ class Bootstrap
         $this->registry->register(IProductService::class, fn() =>
         new ProductService($this->registry->get(IProductRepository::class))
         );
+
+        $this->registry->register(IUserRepository::class, fn() => new UserRepository());
+        $this->registry->register(IUserService::class, fn() =>
+        new UserService($this->registry->get(IUserRepository::class))
+        );
     }
 
     /**
@@ -94,6 +104,10 @@ class Bootstrap
     {
         $this->registry->register(ProductController::class, fn() =>
         new ProductController($this->registry->get(IProductService::class))
+        );
+
+        $this->registry->register(UserController::class, fn() =>
+        new UserController($this->registry->get(IUserService::class))
         );
     }
 }

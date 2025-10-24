@@ -23,5 +23,4 @@ $router = new Router();
 $routes = require_once __DIR__ . '/src/Bootstrap/routes.php';
 $router->initialize($routes, 'Demoshop\\Local\\Presentation\\controllers');
 
-// Run the app (router takes care of everything)
 $router->dispatch($registry->get(HttpRequest::class), $registry);

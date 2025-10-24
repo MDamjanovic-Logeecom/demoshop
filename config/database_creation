@@ -32,3 +32,11 @@ INSERT INTO `products` (`Title`, `SKU`, `Brand`, `Category`, `Dscrptn`, `LDscrpt
 ('HP Pavilion 14', 'HP-PAV-018', 'HP', 'Laptops > Everyday', 'Intel i3, 8GB RAM, 256GB SSD', 'Affordable, lightweight everyday laptop.', NULL, 649.00, 0),
 ('Lenovo IdeaPad 3', 'LEN-IDP-019', 'Lenovo', 'Laptops > Everyday', 'AMD Ryzen 3, 8GB RAM, 256GB SSD', 'Entry-level laptop for light productivity.', NULL, 499.00, 0),
 ('Razer Book 13', 'RAZ-BOK-020', 'Razer', 'Laptops > Ultrabooks', 'Intel i7, 16GB RAM, 512GB SSD', 'Stylish productivity laptop with premium build quality.', NULL, 1699.00, 1);
+
+//------------------------------------------------------ user table:
+
+CREATE TABLE `users` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `username` VARCHAR(50) NOT NULL UNIQUE,
+  `password` VARCHAR(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
