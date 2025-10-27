@@ -2,12 +2,12 @@
 
 namespace Demoshop\Local\Presentation\controllers;
 
-use Demoshop\Local\Business\IProductService;
+use Demoshop\Local\Business\Interfaces\Service\IProductService;
 use Demoshop\Local\DTO\ProductDTO;
+use Demoshop\Local\Infrastructure\http\ErrorResponse;
 use Demoshop\Local\Infrastructure\http\HtmlResponse;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Infrastructure\http\RedirectResponse;
-use Demoshop\Local\Infrastructure\http\ErrorResponse;
 
 /**
  * Class ProductController

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Welcome</title>
-    <link rel="stylesheet" href="/src/Presentation/public/css/login.css">
+    <link rel="stylesheet" href="/src/Presentation/public/css/login.css?v=1.0">
 </head>
 <body>
 <div class="container">
@@ -26,13 +26,16 @@
                     <label for="remember_me">Keep me logged in</label>
                 </div>
             </div>
-
             <div class="right-side" style="display: flex; align-items: flex-end; justify-content: flex-end;">
                 <button type="submit">Log In</button>
             </div>
         </div>
+        <div class="error-message-container">
+            <?php if (!empty($message)): ?>
+                <span class="error-message"><?= htmlspecialchars($message) ?></span>
+            <?php endif; ?>
+        </div>
     </form>
 </div>
-<script src="/src/Presentation/public/js/message.js"></script>
 </body>
 </html>

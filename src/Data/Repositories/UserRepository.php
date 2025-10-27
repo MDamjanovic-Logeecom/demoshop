@@ -1,7 +1,8 @@
 <?php
 
-namespace Demoshop\Local\Data;
+namespace Demoshop\Local\Data\Repositories;
 
+use Demoshop\Local\Business\Interfaces\Repository\IUserRepository;
 use Demoshop\Local\Data\Models\EloquentUser;
 use Demoshop\Local\DTO\UserDTO;
 

@@ -1,7 +1,8 @@
 <?php
 
-namespace Demoshop\Local\Data;
+namespace Demoshop\Local\Data\Repositories;
 
+use Demoshop\Local\Business\Interfaces\Repository\IProductRepository;
 use Demoshop\Local\Data\Models\EloquentProduct;
 use Demoshop\Local\DTO\ProductDTO;
 

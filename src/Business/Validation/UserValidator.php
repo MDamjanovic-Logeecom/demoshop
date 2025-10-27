@@ -2,6 +2,7 @@
 
 namespace Demoshop\Local\Business\Validation;
 
+use Demoshop\Local\DTO\UserDTO;
 use InvalidArgumentException;
 
 /**
@@ -14,10 +15,11 @@ class UserValidator
      *
      * @param string $username
      * @param string $password
+     * @param UserDTO|null $userDTO
      *
      * @return void
      */
-    public function validateRegistration(string $username, string $password): void
+    public function validateRegistration(string $username, string $password, ?UserDTO $userDTO): void
     {
         if (empty($username)) {
             throw new InvalidArgumentException('Username cannot be empty.');
@@ -25,6 +27,10 @@ class UserValidator
 
         if (empty($password)) {
             throw new InvalidArgumentException('Password cannot be empty.');
+        }
+
+        if (!empty($userDTO)) {
+            throw new InvalidArgumentException('User with the same username already exists.');
         }
 
         if (strlen($password) < 8) {

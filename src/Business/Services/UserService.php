@@ -1,9 +1,10 @@
 <?php
 
-namespace Demoshop\Local\Business;
+namespace Demoshop\Local\Business\Services;
 
+use Demoshop\Local\Business\Interfaces\Repository\IUserRepository;
+use Demoshop\Local\Business\Interfaces\Service\IUserService;
 use Demoshop\Local\Business\Validation\UserValidator;
-use Demoshop\Local\Data\IUserRepository;
 use Demoshop\Local\DTO\UserDTO;
 
 /**
@@ -41,7 +42,9 @@ class UserService implements IUserService
      */
     public function register(string $username, string $password): ?UserDTO
     {
-        $this->validator->validateRegistration($username, $password);
+        $dto = null;
+        $dto = $this->repository->getUserByUsername($username);
+        $this->validator->validateRegistration($username, $password, $dto);
 
         return $this->repository->register($username, $password);
     }

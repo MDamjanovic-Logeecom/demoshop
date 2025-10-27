@@ -1,5 +1,5 @@
 <?php
-namespace Demoshop\Local\Data;
+namespace Demoshop\Local\Business\Interfaces\Repository;
 
 use Demoshop\Local\DTO\ProductDTO;
 

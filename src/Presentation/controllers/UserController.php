@@ -2,11 +2,16 @@
 
 namespace Demoshop\Local\Presentation\controllers;
 
-use Demoshop\Local\Business\IUserService;
+use Demoshop\Local\Business\Interfaces\Service\IUserService;
 use Demoshop\Local\Infrastructure\http\ErrorResponse;
 use Demoshop\Local\Infrastructure\http\HtmlResponse;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Infrastructure\http\RedirectResponse;
+use Demoshop\Local\Presentation\helper\SessionManager;
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 /**
  * Class UserController
@@ -61,7 +66,7 @@ class UserController
     }
 
     /**
-     * Check if user credentials exist
+     * Check if user credentials exist, keep logged in if field checked.
      *
      * @param HttpRequest $request
      *
@@ -74,13 +79,20 @@ class UserController
 
         $user = $this->service->login($username, $password);
 
-        if ($user) {
-            return new RedirectResponse('/admin/products');
+        if (!$user) {
+            $redirectUrl = "/admin?message=" . urlencode('Incorrect credentials.');
+
+            return new RedirectResponse($redirectUrl);
         }
 
-        $redirectUrl = "/admin?message=" . urlencode('Incorrect credentials.');
+        $sessionManager = new SessionManager();
+        $sessionManager->setAdminId($user->id);
 
-        return new RedirectResponse($redirectUrl);
+        if ($request->getHttpPost('remember_me')) {
+            $sessionManager->setRememberMeCookie($user->id);
+        }
+
+        return new RedirectResponse('/admin/products');
     }
 
     /**
@@ -88,11 +100,17 @@ class UserController
      *
      * @param HttpRequest $request
      *
-     * @return HtmlResponse
+     * @return HtmlResponse|RedirectResponse
      */
-    public function showLoginPage(HttpRequest $request): HtmlResponse
+    public function showLoginPage(HttpRequest $request): HtmlResponse|RedirectResponse
     {
+        $sessionManager = new SessionManager();
+        if ($sessionManager->isLoggedIn()) {
+            return new RedirectResponse('/admin/products');
+        }
+
         $message = $request->getHttpGet('message', '');
+
         return new HtmlResponse('login.php', ['message' => $message]);
     }
 }

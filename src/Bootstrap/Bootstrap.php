@@ -2,16 +2,16 @@
 
 namespace Demoshop\Local\Bootstrap;
 
-use Demoshop\Local\Business\IProductService;
-use Demoshop\Local\Business\IUserService;
-use Demoshop\Local\Business\ProductService;
-use Demoshop\Local\Business\UserService;
+use Demoshop\Local\Business\Interfaces\Repository\IProductRepository;
+use Demoshop\Local\Business\Interfaces\Repository\IUserRepository;
+use Demoshop\Local\Business\Interfaces\Service\IProductService;
+use Demoshop\Local\Business\Interfaces\Service\IUserService;
+use Demoshop\Local\Business\Services\ProductService;
+use Demoshop\Local\Business\Services\UserService;
 use Demoshop\Local\Business\Validation\ProductValidator;
 use Demoshop\Local\Business\Validation\UserValidator;
-use Demoshop\Local\Data\IProductRepository;
-use Demoshop\Local\Data\IUserRepository;
-use Demoshop\Local\Data\ProductRepository;
-use Demoshop\Local\Data\UserRepository;
+use Demoshop\Local\Data\Repositories\ProductRepository;
+use Demoshop\Local\Data\Repositories\UserRepository;
 use Demoshop\Local\Infrastructure\DI\ServiceRegistry;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Presentation\controllers\ProductController;

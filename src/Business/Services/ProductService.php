@@ -1,9 +1,10 @@
 <?php
 
-namespace Demoshop\Local\Business;
+namespace Demoshop\Local\Business\Services;
 
+use Demoshop\Local\Business\Interfaces\Repository\IProductRepository;
+use Demoshop\Local\Business\Interfaces\Service\IProductService;
 use Demoshop\Local\Business\Validation\ProductValidator;
-use Demoshop\Local\Data\IProductRepository;
 use Demoshop\Local\DTO\ProductDTO;
 
 /**

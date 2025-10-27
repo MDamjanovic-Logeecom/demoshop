@@ -1,6 +1,6 @@
 <?php
 
-namespace Demoshop\Local\Business;
+namespace Demoshop\Local\Business\Interfaces\Service;
 
 use Demoshop\Local\DTO\UserDTO;
 
