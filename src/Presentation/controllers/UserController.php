@@ -8,8 +8,18 @@ use Demoshop\Local\Infrastructure\http\HtmlResponse;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Infrastructure\http\RedirectResponse;
 
+/**
+ * Class UserController
+ *
+ * Handles HTTP requests related to users.
+ * Uses UserService for business logic and returns HttpResponse objects.
+ */
 class UserController
 {
+    /**
+     * @var IUserService Service layer for user-related operations.
+     *  Concrete instance is injected in the constructor.
+     */
     private IUserService $service;
 
     public function __construct(IUserService $service)
@@ -17,6 +27,13 @@ class UserController
         $this->service = $service;
     }
 
+    /**
+     * Register a new user
+     *
+     * @param HttpRequest $request
+     *
+     * @return RedirectResponse|ErrorResponse
+     */
     public function register(HttpRequest $request): RedirectResponse|ErrorResponse
     {
         $headerKey = $request->getServer('REGISTRATION_KEY', '');
@@ -29,15 +46,27 @@ class UserController
         $username = $request->getHttpPost('username');
         $password = $request->getHttpPost('password');
 
-        $user = $this->service->register($username, $password);
+        try {
+            $user = $this->service->register($username, $password);
 
-        if ($user) {
-            return new RedirectResponse('/success');
+            if ($user) {
+                return new RedirectResponse('/success');
+            }
+
+            return new ErrorResponse('/error?msg=registration_failed', 400);
+
+        } catch (\InvalidArgumentException $invalidArgumentException) {
+            return new ErrorResponse('/error?msg=' . urlencode($invalidArgumentException->getMessage()), 400);
         }
-
-        return new ErrorResponse('/error?msg=registration_failed', 400);
     }
 
+    /**
+     * Check if user credentials exist
+     *
+     * @param HttpRequest $request
+     *
+     * @return RedirectResponse
+     */
     public function login(HttpRequest $request): RedirectResponse
     {
         $username = $request->getHttpPost('username');
@@ -54,6 +83,13 @@ class UserController
         return new RedirectResponse($redirectUrl);
     }
 
+    /**
+     * Get the login page
+     *
+     * @param HttpRequest $request
+     *
+     * @return HtmlResponse
+     */
     public function showLoginPage(HttpRequest $request): HtmlResponse
     {
         $message = $request->getHttpGet('message', '');

@@ -2,6 +2,7 @@
 
 namespace Demoshop\Local\Business;
 
+use Demoshop\Local\Business\Validation\ProductValidator;
 use Demoshop\Local\Data\IProductRepository;
 use Demoshop\Local\DTO\ProductDTO;
 
@@ -22,6 +23,11 @@ class ProductService implements IProductService
     private IProductRepository $repository;
 
     /**
+     * @var ProductValidator for back-end validations
+     */
+    private ProductValidator $validator;
+
+    /**
      * Constants for validating image proportions
      */
     const int MIN_WIDTH = 600;
@@ -30,10 +36,12 @@ class ProductService implements IProductService
 
     /**
      * @param IProductRepository $repository Repository instance for database operations.
+     * @param ProductValidator $validator of back validation.
      */
-    public function __construct(IProductRepository $repository)
+    public function __construct(IProductRepository $repository, ProductValidator $validator)
     {
         $this->repository = $repository;
+        $this->validator = $validator;
     }
 
     /**

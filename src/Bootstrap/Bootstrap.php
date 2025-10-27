@@ -6,6 +6,8 @@ use Demoshop\Local\Business\IProductService;
 use Demoshop\Local\Business\IUserService;
 use Demoshop\Local\Business\ProductService;
 use Demoshop\Local\Business\UserService;
+use Demoshop\Local\Business\Validation\ProductValidator;
+use Demoshop\Local\Business\Validation\UserValidator;
 use Demoshop\Local\Data\IProductRepository;
 use Demoshop\Local\Data\IUserRepository;
 use Demoshop\Local\Data\ProductRepository;
@@ -88,12 +90,12 @@ class Bootstrap
         $this->registry->register(HttpRequest::class, fn() => new HttpRequest());
         $this->registry->register(IProductRepository::class, fn() => new ProductRepository());
         $this->registry->register(IProductService::class, fn() =>
-        new ProductService($this->registry->get(IProductRepository::class))
+        new ProductService($this->registry->get(IProductRepository::class), new ProductValidator())
         );
 
         $this->registry->register(IUserRepository::class, fn() => new UserRepository());
         $this->registry->register(IUserService::class, fn() =>
-        new UserService($this->registry->get(IUserRepository::class))
+        new UserService($this->registry->get(IUserRepository::class), new UserValidator())
         );
     }
 

@@ -1,0 +1,45 @@
+<?php
+
+namespace Demoshop\Local\Business\Validation;
+
+use InvalidArgumentException;
+
+/**
+ * Validator class to verify user actions
+ */
+class UserValidator
+{
+    /**
+     * Throws exceptions if something goes wrong with the validation
+     *
+     * @param string $username
+     * @param string $password
+     *
+     * @return void
+     */
+    public function validateRegistration(string $username, string $password): void
+    {
+        if (empty($username)) {
+            throw new InvalidArgumentException('Username cannot be empty.');
+        }
+
+        if (empty($password)) {
+            throw new InvalidArgumentException('Password cannot be empty.');
+        }
+
+        if (strlen($password) < 8) {
+            throw new InvalidArgumentException('Password must be at least 8 characters long.');
+        }
+
+        if (
+            !preg_match('/[A-Z]/', $password) || // Uppercase
+            !preg_match('/[a-z]/', $password) || // Lowercase
+            !preg_match('/\d/', $password) ||    // Number
+            !preg_match('/[\W_]/', $password)    // Special character
+        ) {
+            throw new InvalidArgumentException(
+                'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.'
+            );
+        }
+    }
+}
