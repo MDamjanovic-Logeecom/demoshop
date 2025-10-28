@@ -10,7 +10,7 @@
     <h1 style="font-size: 36px; text-align: center;">Welcome</h1>
     <p style="font-size: 18px; text-align: center; margin-bottom: 30px;">to demo shop administration!</p>
 
-    <form action="/admin" method="post">
+    <form action="/login" method="post">
         <div class="form-grid">
             <div class="left-side">
                 <div class="form-group">

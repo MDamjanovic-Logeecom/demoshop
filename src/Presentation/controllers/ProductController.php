@@ -69,6 +69,7 @@ class ProductController
         $message = $deleted ? 'Product deleted successfully' : 'Failed to delete product';
 
         $redirectUrl = "/admin/products?status={$status}&message=" . urlencode($message);
+
         return new RedirectResponse($redirectUrl);
     }
 

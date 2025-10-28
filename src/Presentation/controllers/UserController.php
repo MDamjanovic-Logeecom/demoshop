@@ -77,7 +77,7 @@ class UserController
         $user = $this->service->login($username, $password, $rememberMe);
 
         if (!$user) {
-            $redirectUrl = "/admin?message=" . urlencode('Incorrect credentials.');
+            $redirectUrl = "/loginPage?message=" . urlencode('Incorrect credentials.');
 
             return new RedirectResponse($redirectUrl);
         }
@@ -94,7 +94,7 @@ class UserController
      */
     public function showLoginPage(HttpRequest $request): HtmlResponse|RedirectResponse
     {
-        if ($this->service->isLoggedIn()) {
+        if ($this->service->isLoggedIn()) { //TODO: no more redirecting like that -> use chain of responsibility pattern
             return new RedirectResponse('/admin/products');
         }
 

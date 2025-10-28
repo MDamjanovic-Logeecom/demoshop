@@ -1,7 +1,9 @@
 <?php
 
 namespace Demoshop\Local\Infrastructure\routers;
-
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 use Demoshop\Local\Infrastructure\DI\ServiceRegistry;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Infrastructure\http\Response;
@@ -23,6 +25,7 @@ class Router
      * Initialize the routes reading them from file.
      *
      * @param array $routes
+     * @param string $controllerDirectoryPath
      *
      * @return void
      */
@@ -53,7 +56,8 @@ class Router
     }
 
     /**
-     * Handles HttpRequests, parses routes, and delegates to target functions
+     * Handles HttpRequests, parses routes, and delegates to target functions.
+     * Sends
      *
      * @param HttpRequest $request
      * @param ServiceRegistry $registry
@@ -64,51 +68,37 @@ class Router
      */
     protected function handleRequest(HttpRequest $request, ServiceRegistry $registry): void
     {
-        $method = $request->getServer('REQUEST_METHOD');
+        $method = strtoupper($request->getServer('REQUEST_METHOD'));
         $url = parse_url($request->getServer('REQUEST_URI'), PHP_URL_PATH);
         $url = str_replace('/index.php', '', $url) ?: '/';
 
-        foreach ($this->routes as $route) {
-            if ($route->method !== $method) {
+        foreach ($this->routes as $routeItem) {
+            $route = $this->extractMatchingRoute($routeItem, $request, $url);
+            if (!$route instanceof Route) {
                 continue;
             }
 
-            $pattern = preg_replace('#\{[\w]+\}#', '([\w\-]+)', $route->url);
-
-            if (!preg_match("#^$pattern$#", $url, $matches)) {
-                continue;
-            }
-
-            array_shift($matches);
-
-            // Parameter names in the route URL
-            preg_match_all('#\{([\w]+)\}#', $route->url, $paramNames);
-
-            $routeParams = array_combine($paramNames[1], $matches);
-            $request->setRouteParams($routeParams);
-
-            // Call controller method
-            [$controllerName, $methodName] = explode('::', $route->target);
-            $controllerClass = "$this->controllerDirectoryPath\\$controllerName";
+            [$controllerClass, $methodName] = $this->resolveController($route->target);
             $controller = $registry->get($controllerClass);
 
             if (!method_exists($controller, $methodName)) {
-                throw new Exception("Controller method not found: $controllerName::$methodName");
+                throw new Exception("Controller method not found: {$controllerClass}::{$methodName}");
             }
 
-            $result = call_user_func_array(
-                [$controller, $methodName],
-                $matches ? [$request, ...$matches] : [$request]
-            );
+            $params = $this->extractRouteParams($route, $url);
+            $request->setRouteParams($params);
 
-            if ($result instanceof Response) {
-                $result->send();
+            $response = call_user_func([$controller, $methodName], $request, ...array_values($params));
 
-                return;
+            if (!$response instanceof Response) {
+                throw new Exception("Controller must return a Response object");
             }
-            throw new Exception("Controller must return a Response object");
+
+            $response->send();
+            return;
         }
-        throw new Exception("Route not found for $method $url", 404);
+
+        throw new Exception("Route not found for {$method} {$url}", 404);
     }
 
     /**
@@ -123,5 +113,54 @@ class Router
         $code = $exception->getCode() ?: 500;
         http_response_code($code);
         echo "<h1>Error $code</h1><p>" . htmlspecialchars($exception->getMessage()) . "</p>";
+    }
+
+    /**
+     * If this route group matches the URL prefix and route from HttpRequest passes
+     * the middleware checks, returns the route in question.
+     */
+    private function extractMatchingRoute(RouteGroup $routeGroup, HttpRequest $request, string $url): ?Route
+    {
+        if (!$routeGroup->matchesPrefix($url)) {
+            return null;
+        }
+
+        if (!$routeGroup->middlewareCheck($request)) {
+            throw new Exception("Unauthorized", 403);
+        }
+
+        return $routeGroup->findMatchingRoute($request);
+    }
+
+    /**
+     * Determine if a route matches the current URL.
+     */
+    private function routeMatches(Route $route, string $url): bool
+    {
+        $pattern = preg_replace('#\{[\w]+\}#', '([\w\-]+)', $route->url);
+
+        return (bool) preg_match("#^{$pattern}$#", $url);
+    }
+
+    /**
+     * Extract route parameters from the URL.
+     */
+    private function extractRouteParams(Route $route, string $url): array
+    {
+        preg_match_all('#\{([\w]+)\}#', $route->url, $paramNames);
+        $pattern = preg_replace('#\{[\w]+\}#', '([\w\-]+)', $route->url);
+        preg_match("#^{$pattern}$#", $url, $matches);
+        array_shift($matches);
+
+        return !empty($paramNames[1]) ? array_combine($paramNames[1], $matches) : [];
+    }
+
+    /**
+     * Split controller target into class and method.
+     */
+    private function resolveController(string $target): array
+    {
+        [$controllerName, $methodName] = explode('::', $target);
+        return ["{$this->controllerDirectoryPath}\\{$controllerName}", $methodName];
     }
 }
