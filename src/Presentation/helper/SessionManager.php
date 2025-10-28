@@ -7,11 +7,30 @@ namespace Demoshop\Local\Presentation\helper;
  */
 class SessionManager
 {
+    /**
+     * SessionManager singleton instance
+     *
+     * @var SessionManager|null
+     */
+    private static ?SessionManager $instance = null;
+
     public function __construct()
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+    }
+
+    /**
+     * Singleton access to the SessionManager instance
+     */
+    public static function getInstance(): SessionManager
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+
+        return self::$instance;
     }
 
     /**

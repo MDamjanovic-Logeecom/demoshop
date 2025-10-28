@@ -9,10 +9,6 @@ use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Infrastructure\http\RedirectResponse;
 use Demoshop\Local\Presentation\helper\SessionManager;
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 /**
  * Class UserController
  *
@@ -76,20 +72,14 @@ class UserController
     {
         $username = $request->getHttpPost('username');
         $password = $request->getHttpPost('password');
+        $rememberMe = (bool)$request->getHttpPost('remember_me');
 
-        $user = $this->service->login($username, $password);
+        $user = $this->service->login($username, $password, $rememberMe);
 
         if (!$user) {
             $redirectUrl = "/admin?message=" . urlencode('Incorrect credentials.');
 
             return new RedirectResponse($redirectUrl);
-        }
-
-        $sessionManager = new SessionManager();
-        $sessionManager->setAdminId($user->id);
-
-        if ($request->getHttpPost('remember_me')) {
-            $sessionManager->setRememberMeCookie($user->id);
         }
 
         return new RedirectResponse('/admin/products');
@@ -104,8 +94,7 @@ class UserController
      */
     public function showLoginPage(HttpRequest $request): HtmlResponse|RedirectResponse
     {
-        $sessionManager = new SessionManager();
-        if ($sessionManager->isLoggedIn()) {
+        if ($this->service->isLoggedIn()) {
             return new RedirectResponse('/admin/products');
         }
 

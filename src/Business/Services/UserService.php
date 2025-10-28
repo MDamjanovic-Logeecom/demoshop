@@ -6,6 +6,7 @@ use Demoshop\Local\Business\Interfaces\Repository\IUserRepository;
 use Demoshop\Local\Business\Interfaces\Service\IUserService;
 use Demoshop\Local\Business\Validation\UserValidator;
 use Demoshop\Local\DTO\UserDTO;
+use Demoshop\Local\Presentation\helper\SessionManager;
 
 /**
  *  Class UserService
@@ -42,7 +43,6 @@ class UserService implements IUserService
      */
     public function register(string $username, string $password): ?UserDTO
     {
-        $dto = null;
         $dto = $this->repository->getUserByUsername($username);
         $this->validator->validateRegistration($username, $password, $dto);
 
@@ -54,10 +54,11 @@ class UserService implements IUserService
      *
      * @param string $username
      * @param string $password
+     * @param bool $rememberMe
      *
      * @return UserDTO|null
      */
-    public function login(string $username, string $password): ?UserDTO
+    public function login(string $username, string $password, bool $rememberMe = false): ?UserDTO
     {
         $user = $this->repository->getUserByUsername($username);
 
@@ -69,6 +70,25 @@ class UserService implements IUserService
             return null;
         }
 
+        $sessionManager = SessionManager::getInstance();
+        $sessionManager->setAdminId($user->id);
+
+        if ($rememberMe) {
+            $sessionManager->setRememberMeCookie($user->id);
+        }
+
         return $user;
+    }
+
+    /**
+     * Checks if user is logged-in already
+     *
+     * @return bool
+     */
+    public function isLoggedIn(): bool
+    {
+        $sessionManager = SessionManager::getInstance();
+
+        return $sessionManager->isLoggedIn();
     }
 }
