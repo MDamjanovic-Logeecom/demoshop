@@ -3,6 +3,7 @@
 namespace Demoshop\Local\Business\Validation;
 
 use Demoshop\Local\DTO\UserDTO;
+use Demoshop\Local\Infrastructure\Error\exceptions\concreteExceptions\InvalidArgumentsException;
 use InvalidArgumentException;
 
 /**
@@ -22,19 +23,19 @@ class UserValidator
     public function validateRegistration(string $username, string $password, ?UserDTO $userDTO): void
     {
         if (empty($username)) {
-            throw new InvalidArgumentException('Username cannot be empty.');
+            throw new InvalidArgumentsException('Username cannot be empty.');
         }
 
         if (empty($password)) {
-            throw new InvalidArgumentException('Password cannot be empty.');
+            throw new InvalidArgumentsException('Password cannot be empty.');
         }
 
         if (!empty($userDTO)) {
-            throw new InvalidArgumentException('User with the same username already exists.');
+            throw new InvalidArgumentsException('User with the same username already exists.');
         }
 
         if (strlen($password) < 8) {
-            throw new InvalidArgumentException('Password must be at least 8 characters long.');
+            throw new InvalidArgumentsException('Password must be at least 8 characters long.');
         }
 
         if (
@@ -43,7 +44,7 @@ class UserValidator
             !preg_match('/\d/', $password) ||    // Number
             !preg_match('/[\W_]/', $password)    // Special character
         ) {
-            throw new InvalidArgumentException(
+            throw new InvalidArgumentsException(
                 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.'
             );
         }

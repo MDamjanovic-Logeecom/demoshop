@@ -3,6 +3,8 @@
 namespace Demoshop\Local\Infrastructure\routers;
 
 use Demoshop\Local\Infrastructure\DI\ServiceRegistry;
+use Demoshop\Local\Infrastructure\Error\exceptions\concreteExceptions\InvalidResponseException;
+use Demoshop\Local\Infrastructure\Error\exceptions\concreteExceptions\NotFoundException;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Infrastructure\http\Response;
 use Exception;
@@ -76,7 +78,7 @@ class Router
             $controller = $registry->get($controllerClass);
 
             if (!method_exists($controller, $methodName)) {
-                throw new Exception("Controller method not found: {$controllerClass}::{$methodName}");
+                throw new NotFoundException();
             }
 
             $params = $this->extractRouteParams($route, $url);
@@ -85,14 +87,14 @@ class Router
             $response = call_user_func([$controller, $methodName], $request, ...array_values($params));
 
             if (!$response instanceof Response) {
-                throw new Exception("Controller must return a Response object");
+                throw new InvalidResponseException();
             }
 
             $response->send();
             return;
         }
 
-        throw new Exception("Route not found for {$method} {$url}", 404);
+        throw new NotFoundException();
     }
 
     /**

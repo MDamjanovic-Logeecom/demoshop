@@ -20,11 +20,11 @@ class AuthorizationMiddleware implements Middleware
      *
      * @var Middleware|null
      */
-    private $nextMiddleware = null;
+    private Middleware|null $nextMiddleware = null;
     /**
-     * @var null
+     * @var HttpRequest|null
      */
-    private $currentRequest = null;
+    private HttpRequest|null $currentRequest = null;
 
     /**
      * Checking validity of authorization in the given request.
@@ -32,11 +32,12 @@ class AuthorizationMiddleware implements Middleware
      * @param HttpRequest $request
      *
      * @return bool
+     *
+     * @throws UnauthorizedException
      */
     public function middlewareCheck(HttpRequest $request): bool
     {
         $this->currentRequest = $request;
-        $success = true;
 
         $sessionManager = SessionManager::getInstance();
         if (!$sessionManager->isLoggedIn()) {
@@ -47,7 +48,7 @@ class AuthorizationMiddleware implements Middleware
             return $this->nextCheck();
         }
 
-        return $success;
+        return true;
     }
 
     /**
