@@ -7,6 +7,7 @@ use Demoshop\Local\DTO\ProductDTO;
 use Demoshop\Local\Infrastructure\http\ErrorResponse;
 use Demoshop\Local\Infrastructure\http\HtmlResponse;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
+use Demoshop\Local\Infrastructure\http\JsonResponse;
 use Demoshop\Local\Infrastructure\http\RedirectResponse;
 
 /**
@@ -55,7 +56,7 @@ class ProductController
      *
      * @return RedirectResponse|ErrorResponse HTTP response indicating the result of the deletion.
      */
-    public function deleteProductBySKU(HttpRequest $request): RedirectResponse|ErrorResponse
+    public function deleteProductBySKU(HttpRequest $request): JsonResponse|ErrorResponse
     {
         if (!$request->isPost() || $request->getHttpPost('delete_sku') === null) {
             return new ErrorResponse('Invalid request method or missing SKU.', 405); // 405 = Method Not Allowed
@@ -65,12 +66,11 @@ class ProductController
         $sku = $request->getHttpPost('delete_sku');
         $deleted = $this->service->deleteBySKU($sku); // Asking service to delete
 
-        $status = $deleted ? 'success' : 'error';
-        $message = $deleted ? 'Product deleted successfully' : 'Failed to delete product';
+        if ($deleted) {
+            return new JsonResponse(['status' => 'success', 'message' => 'Product deleted successfully.']);
+        }
 
-        $redirectUrl = "/admin/products?status={$status}&message=" . urlencode($message);
-
-        return new RedirectResponse($redirectUrl);
+        return new JsonResponse(['status' => 'error', 'message' => 'Failed to delete product.']);
     }
 
     /**
@@ -94,7 +94,7 @@ class ProductController
         $status = $success ? 'success' : 'error';
         $message = $success ? 'Product edited successfully.' : 'Failed to edit product.'; // For displaying alerts
 
-        $redirectUrl = "/admin/products?status={$status}&message=" . urlencode($message);
+        $redirectUrl = "/admin?status={$status}&message=" . urlencode($message);
 
         return new RedirectResponse($redirectUrl);
     }
@@ -120,7 +120,7 @@ class ProductController
         $status = $success ? 'success' : 'error';
         $message = $success ? 'Product added successfully.' : 'Failed to add product.';
 
-        $redirectUrl = "/admin/products?status={$status}&message=" . urlencode($message);
+        $redirectUrl = "/admin?status={$status}&message=" . urlencode($message);
 
         return new RedirectResponse($redirectUrl);
     }

@@ -45,6 +45,8 @@ class Router
      * @param ServiceRegistry $registry
      *
      * @return void
+     *
+     * @throws Exception
      */
     public function dispatch(HttpRequest $request, ServiceRegistry $registry): void
     {

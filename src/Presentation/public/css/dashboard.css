@@ -1,0 +1,40 @@
+.side-buttons .side-btn.active {
+    background-color: white !important;
+    color: #333 !important;
+    border: 2px solid #ccc;
+}
+.main-box {
+    background: #fff;
+    padding: 20px;
+    min-height: 500px;
+    min-width: 1175px;
+}
+
+.dashboard-layout {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.dashboard-left, .dashboard-right {
+    flex: 1;
+    background: #f4f4f4;
+    padding: 20px;
+    border-radius: 8px;
+    min-height: 300px; /* consistent minimum height per column */
+}
+
+.dashboard-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.dashboard-row .label {
+    font-weight: 600;
+}
+
+.dashboard-row .value {
+    font-weight: 400;
+}

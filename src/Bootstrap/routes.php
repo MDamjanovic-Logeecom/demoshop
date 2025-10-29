@@ -10,7 +10,10 @@ use Demoshop\Local\Presentation\middleware\handlers\AuthorizationMiddleware;
  */
 
 $adminRoutes = [
-    new Route('GET',  '/admin/products',          'ProductController::getAllProducts'),
+    new Route('GET',  '/admin',                   'FragmentController::layout'),
+    new Route('GET',  '/admin/dashboard',         'FragmentController::dashboard'),
+    new Route('GET',  '/admin/categories',        'FragmentController::categories'),
+    new Route('GET',  '/admin/products',          'FragmentController::products'),
     new Route('GET',  '/admin/products/create',   'ProductController::showAddForm'),
     new Route('POST', '/admin/products/create',   'ProductController::addProduct'),
     new Route('POST', '/admin/products/delete',   'ProductController::deleteProductBySKU'),

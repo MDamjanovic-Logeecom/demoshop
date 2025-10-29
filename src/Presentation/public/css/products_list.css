@@ -20,12 +20,30 @@ body {
     gap: 10px;
 }
 
-.side-buttons button {
-    padding: 8px 12px;
+.side-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.side-buttons .side-btn {
+    background-color: gray; /* default button color */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
     cursor: pointer;
-    border-radius: 4px 0 0 4px;
-    border-right: none;
     text-align: left;
+    transition: background-color 0.3s;
+}
+
+.side-buttons .side-btn:hover {
+    background-color: #555; /* hover effect */
+}
+
+/* Active button */
+.side-buttons .side-btn.active {
+    background-color: #fff; /* selected button background */
+    color: #333; /* text color for contrast */
 }
 
 /* Big box */
@@ -107,3 +125,4 @@ td.button-cell button {
     background-color: white;
     border-color: #cccccc;
 }
+

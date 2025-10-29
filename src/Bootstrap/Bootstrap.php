@@ -14,6 +14,7 @@ use Demoshop\Local\Data\Repositories\ProductRepository;
 use Demoshop\Local\Data\Repositories\UserRepository;
 use Demoshop\Local\Infrastructure\DI\ServiceRegistry;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
+use Demoshop\Local\Presentation\controllers\FragmentController;
 use Demoshop\Local\Presentation\controllers\ProductController;
 use Demoshop\Local\Presentation\controllers\UserController;
 use Dotenv\Dotenv;
@@ -106,6 +107,10 @@ class Bootstrap
     {
         $this->registry->register(ProductController::class, fn() =>
         new ProductController($this->registry->get(IProductService::class))
+        );
+
+        $this->registry->register(FragmentController::class, fn() =>
+        new FragmentController($this->registry->get(IProductService::class))
         );
 
         $this->registry->register(UserController::class, fn() =>

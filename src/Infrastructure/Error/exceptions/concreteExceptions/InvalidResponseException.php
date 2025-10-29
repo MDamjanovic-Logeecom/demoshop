@@ -4,6 +4,9 @@ namespace Demoshop\Local\Infrastructure\Error\exceptions\concreteExceptions;
 
 use Demoshop\Local\Infrastructure\Error\exceptions\IException;
 
+/**
+ * Exception thrown when invalid request received
+ */
 class InvalidResponseException extends \Exception implements IException
 {
     public function __construct(
