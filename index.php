@@ -4,6 +4,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use Demoshop\Local\Bootstrap\Bootstrap;
 use Demoshop\Local\Infrastructure\DI\ServiceRegistry;
+use Demoshop\Local\Infrastructure\Error\ErrorHandler;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Infrastructure\routers\Router;
 
@@ -12,6 +13,7 @@ use Demoshop\Local\Infrastructure\routers\Router;
  *
  * initializes bootstrap and uses Router to direct HTTP traffic
  */
+set_exception_handler([ErrorHandler::class, 'handle']);
 
 $registry = new ServiceRegistry();
 $bootstrap = new Bootstrap($registry);

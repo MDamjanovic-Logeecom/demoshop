@@ -37,5 +37,6 @@
         </div>
     </form>
 </div>
+<script src="/src/Presentation/public/js/message.js"></script>
 </body>
 </html>

@@ -58,22 +58,6 @@ class RouteGroup
     }
 
     /**
-     * checks if the route group contains the given route
-     *
-     * @param Route $route
-     *
-     * @return bool
-     */
-    public function containsRoute(Route $route): bool
-    {
-        if (in_array($route, $this->routes)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Adds nex middleware to the responsibility chain
      *
      * @param Middleware $middleware
@@ -132,23 +116,5 @@ class RouteGroup
     public function matchesPrefix(string $url): bool
     {
         return str_starts_with($url, $this->prefix);
-    }
-
-    public function getRoutes(): array
-    {
-        return $this->routes;
-    }
-
-    public function getMiddleware(): array
-    {
-        return $this->middleware;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPrefix(): string
-    {
-        return $this->prefix;
     }
 }

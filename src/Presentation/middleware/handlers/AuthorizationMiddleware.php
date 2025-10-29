@@ -2,6 +2,7 @@
 
 namespace Demoshop\Local\Presentation\middleware\handlers;
 
+use Demoshop\Local\Infrastructure\Error\exceptions\concreteExceptions\UnauthorizedException;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Presentation\helper\SessionManager;
 use Demoshop\Local\Presentation\middleware\Middleware;
@@ -39,7 +40,7 @@ class AuthorizationMiddleware implements Middleware
 
         $sessionManager = SessionManager::getInstance();
         if (!$sessionManager->isLoggedIn()) {
-            return false;
+            throw new UnauthorizedException();
         }
 
         if ($this->nextMiddleware) {

@@ -1,19 +1,12 @@
 <?php
 
-use Demoshop\Local\Infrastructure\DI\ServiceRegistry;
 use Demoshop\Local\Infrastructure\routers\Route;
 use Demoshop\Local\Infrastructure\routers\RouteGroup;
-use Demoshop\Local\Infrastructure\routers\Router;
 use Demoshop\Local\Presentation\middleware\handlers\AuthorizationMiddleware;
 
 /**
- * Returns Method-URL-Target closure for each route
- *
- * @param Router $router
- *
- * @param ServiceRegistry $serviceRegistry
- *
- * @return void
+ * Groups and returns routes (Method-URL-Target) in a RouteGroup object
+ * grouped by prefix.
  */
 
 $adminRoutes = [

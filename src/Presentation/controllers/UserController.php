@@ -3,11 +3,11 @@
 namespace Demoshop\Local\Presentation\controllers;
 
 use Demoshop\Local\Business\Interfaces\Service\IUserService;
+use Demoshop\Local\Infrastructure\Error\exceptions\concreteExceptions\InvalidCredentialsException;
 use Demoshop\Local\Infrastructure\http\ErrorResponse;
 use Demoshop\Local\Infrastructure\http\HtmlResponse;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Infrastructure\http\RedirectResponse;
-use Demoshop\Local\Presentation\helper\SessionManager;
 
 /**
  * Class UserController
@@ -67,6 +67,8 @@ class UserController
      * @param HttpRequest $request
      *
      * @return RedirectResponse
+     *
+     * @throws InvalidCredentialsException
      */
     public function login(HttpRequest $request): RedirectResponse
     {
@@ -77,9 +79,7 @@ class UserController
         $user = $this->service->login($username, $password, $rememberMe);
 
         if (!$user) {
-            $redirectUrl = "/loginPage?message=" . urlencode('Incorrect credentials.');
-
-            return new RedirectResponse($redirectUrl);
+            throw new InvalidCredentialsException();
         }
 
         return new RedirectResponse('/admin/products');
@@ -94,7 +94,7 @@ class UserController
      */
     public function showLoginPage(HttpRequest $request): HtmlResponse|RedirectResponse
     {
-        if ($this->service->isLoggedIn()) { //TODO: no more redirecting like that -> use chain of responsibility pattern
+        if ($this->service->isLoggedIn()) {
             return new RedirectResponse('/admin/products');
         }
 

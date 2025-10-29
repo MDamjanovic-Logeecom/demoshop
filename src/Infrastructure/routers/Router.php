@@ -1,9 +1,7 @@
 <?php
 
 namespace Demoshop\Local\Infrastructure\routers;
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+
 use Demoshop\Local\Infrastructure\DI\ServiceRegistry;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Infrastructure\http\Response;
@@ -48,11 +46,7 @@ class Router
      */
     public function dispatch(HttpRequest $request, ServiceRegistry $registry): void
     {
-        try {
-            $this->handleRequest($request, $registry);
-        } catch (Exception $e) {
-            $this->handleException($e);
-        }
+        $this->handleRequest($request, $registry);
     }
 
     /**
@@ -102,20 +96,6 @@ class Router
     }
 
     /**
-     * Handles Exceptions
-     *
-     * @param Exception $exception
-     *
-     * @return void
-     */
-    protected function handleException(Exception $exception): void
-    {
-        $code = $exception->getCode() ?: 500;
-        http_response_code($code);
-        echo "<h1>Error $code</h1><p>" . htmlspecialchars($exception->getMessage()) . "</p>";
-    }
-
-    /**
      * If this route group matches the URL prefix and route from HttpRequest passes
      * the middleware checks, returns the route in question.
      */
@@ -125,21 +105,9 @@ class Router
             return null;
         }
 
-        if (!$routeGroup->middlewareCheck($request)) {
-            throw new Exception("Unauthorized", 403);
-        }
+        $routeGroup->middlewareCheck($request);
 
         return $routeGroup->findMatchingRoute($request);
-    }
-
-    /**
-     * Determine if a route matches the current URL.
-     */
-    private function routeMatches(Route $route, string $url): bool
-    {
-        $pattern = preg_replace('#\{[\w]+\}#', '([\w\-]+)', $route->url);
-
-        return (bool) preg_match("#^{$pattern}$#", $url);
     }
 
     /**
