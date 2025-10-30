@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// Function to display messages during file deletion process
 document.addEventListener('click', async function (e) {
     if (e.target.closest('.delete-form button')) {
         e.preventDefault();
@@ -34,15 +35,11 @@ document.addEventListener('click', async function (e) {
 
             const data = await response.json();
 
-            // Display confirmation message
+            // Confirmation message
             alert(data.message);
 
             if (data.status === 'success') {
-                // Option 1: remove the row visually
                 form.closest('tr').remove();
-
-                // Option 2: reload product list dynamically
-                // loadPage('products');
             }
 
         } catch (error) {

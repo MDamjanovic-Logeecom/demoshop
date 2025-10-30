@@ -82,7 +82,7 @@ class UserController
             throw new InvalidCredentialsException();
         }
 
-        return new RedirectResponse('/admin/products');
+        return new RedirectResponse('/admin');
     }
 
     /**
@@ -95,7 +95,7 @@ class UserController
     public function showLoginPage(HttpRequest $request): HtmlResponse|RedirectResponse
     {
         if ($this->service->isLoggedIn()) {
-            return new RedirectResponse('/admin/products');
+            return new RedirectResponse('/admin');
         }
 
         $message = $request->getHttpGet('message', '');
