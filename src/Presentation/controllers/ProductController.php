@@ -54,17 +54,24 @@ class ProductController
      *
      * @param HttpRequest $request The HTTP request object containing POST data
      *
-     * @return RedirectResponse|ErrorResponse HTTP response indicating the result of the deletion.
+     * @return JsonResponse|ErrorResponse HTTP response indicating the result of the deletion.
      */
     public function deleteProductBySKU(HttpRequest $request): JsonResponse|ErrorResponse
     {
-        if (!$request->isPost() || $request->getHttpPost('delete_sku') === null) {
-            return new ErrorResponse('Invalid request method or missing SKU.', 405); // 405 = Method Not Allowed
+        if (!$request->isPost()) {
+            return new ErrorResponse('Invalid request method.', 405);
         }
 
-        // If request is POST
-        $sku = $request->getHttpPost('delete_sku');
-        $deleted = $this->service->deleteBySKU($sku); // Asking service to delete
+        // Read raw JSON body
+        $rawBody = file_get_contents('php://input');
+        $data = json_decode($rawBody, true);
+
+        if (!isset($data['delete_sku'])) {
+            return new ErrorResponse('Missing SKU.', 400);
+        }
+
+        $sku = $data['delete_sku'];
+        $deleted = $this->service->deleteBySKU($sku);
 
         if ($deleted) {
             return new JsonResponse(['status' => 'success', 'message' => 'Product deleted successfully.']);

@@ -2,9 +2,11 @@
 
 namespace Demoshop\Local\Presentation\controllers;
 
+use Demoshop\Local\Business\Interfaces\Service\ICategoryService;
 use Demoshop\Local\Business\Interfaces\Service\IProductService;
 use Demoshop\Local\Infrastructure\http\HtmlResponse;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
+use Demoshop\Local\Infrastructure\http\JsonResponse;
 
 /**
  * Controller for reaching for fragments to display in the single page application part of the application
@@ -15,16 +17,18 @@ class FragmentController
      * @var IProductService Service layer for product-related operations.
      * Concrete instance is injected in the constructor.
      */
-    private IProductService $service;
+    private IProductService $productService;
+    private ICategoryService $categoryService;
 
     /**
      * ProductController constructor.
      *
      * Initializes the ProductService with its repository.
      */
-    public function __construct(IProductService $service)
+    public function __construct(IProductService $productService, ICategoryService $categoryService)
     {
-        $this->service = $service;
+        $this->productService = $productService;
+        $this->categoryService = $categoryService;
     }
 
     /**
@@ -44,20 +48,22 @@ class FragmentController
      *
      * @param HttpRequest $request
      *
-     * @return HtmlResponse
+     * @return JsonResponse
      */
-    public function dashboard(HttpRequest $request): HtmlResponse
+    public function dashboard(HttpRequest $request): JsonResponse
     {
-        $products = $this->service->getAll();
+        $products = $this->productService->getAll();
         $productCount = count($products);
 
+        $categories = $this->categoryService->getAll();
+        $categoriesCount = count($categories);
+
         // dummy values for now
-        $categoriesCount = 0;
         $homePageViews = 0;
         $mostViewedProduct = 'N/A';
         $productViews = 0;
 
-        return new HtmlResponse('admin/dashboard.php', [
+        return new JsonResponse([
             'productCount' => $productCount,
             'categoriesCount' => $categoriesCount,
             'homePageViews' => $homePageViews,
@@ -71,21 +77,36 @@ class FragmentController
      *
      * @param HttpRequest $request
      *
-     * @return HtmlResponse
+     * @return JsonResponse
      */
-    public function categories(HttpRequest $request): HtmlResponse
+    public function categories(HttpRequest $request): JsonResponse
     {
-        return new HtmlResponse('admin/categories.php');
+        $categories = $this->categoryService->getAll();
+
+        return new JsonResponse($categories);
     }
 
     /**
      * Sends the products list fragment to be displayed in the layout shell.
      *
-     * @return HtmlResponse
+     * @return JsonResponse
      */
-    public function products(): HtmlResponse
+    public function products(): JsonResponse
     {
-        $products = $this->service->getAll();
-        return new HtmlResponse('admin/products_list.php', ['products' => $products]);
+        $products = $this->productService->getAll();
+
+        $data = array_map(fn($product) => [
+            'sku' => $product->sku,
+            'title' => $product->title,
+            'brand' => $product->brand,
+            'category' => $product->category,
+            'shortDescription' => $product->shortDescription,
+            'description' => $product->description,
+            'enabled' => $product->enabled,
+            'price' => $product->price,
+            'image' => $product->image,
+        ], $products);
+
+        return new JsonResponse($data);
     }
 }

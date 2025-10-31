@@ -14,19 +14,13 @@ body {
 }
 
 /* Left-side buttons column */
-.side-buttons {
+.sideMenu {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.side-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.side-buttons .side-btn {
+.sideMenu .side-btn {
     background-color: gray; /* default button color */
     color: #fff;
     border: none;
@@ -36,12 +30,12 @@ body {
     transition: background-color 0.3s;
 }
 
-.side-buttons .side-btn:hover {
+.sideMenu .side-btn:hover {
     background-color: #555; /* hover effect */
 }
 
 /* Active button */
-.side-buttons .side-btn.active {
+.sideMenu .side-btn.active {
     background-color: #fff; /* selected button background */
     color: #333; /* text color for contrast */
 }

@@ -13,13 +13,7 @@ async function deleteProduct(sku, title) {
 
     try {
         //AJAX call:
-        const response = await fetch('/admin/products/delete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ delete_sku: sku })
-        });
-
-        const result = await response.json();
+        const result = await ajax.post('/admin/products/delete', { delete_sku: sku });
 
         if (result.status === 'success') {
             alert(result.message);

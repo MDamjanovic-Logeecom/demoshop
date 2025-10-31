@@ -4,7 +4,6 @@ namespace Demoshop\Local\Business\Validation;
 
 use Demoshop\Local\DTO\UserDTO;
 use Demoshop\Local\Infrastructure\Error\exceptions\concreteExceptions\InvalidArgumentsException;
-use InvalidArgumentException;
 
 /**
  * Validator class to verify user actions
@@ -19,6 +18,8 @@ class UserValidator
      * @param UserDTO|null $userDTO
      *
      * @return void
+     *
+     * @throws InvalidArgumentsException
      */
     public function validateRegistration(string $username, string $password, ?UserDTO $userDTO): void
     {

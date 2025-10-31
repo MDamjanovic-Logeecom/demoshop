@@ -2,18 +2,23 @@
 
 namespace Demoshop\Local\Bootstrap;
 
+use Demoshop\Local\Business\Interfaces\Repository\ICategoryRepository;
 use Demoshop\Local\Business\Interfaces\Repository\IProductRepository;
 use Demoshop\Local\Business\Interfaces\Repository\IUserRepository;
+use Demoshop\Local\Business\Interfaces\Service\ICategoryService;
 use Demoshop\Local\Business\Interfaces\Service\IProductService;
 use Demoshop\Local\Business\Interfaces\Service\IUserService;
+use Demoshop\Local\Business\Services\CategoryService;
 use Demoshop\Local\Business\Services\ProductService;
 use Demoshop\Local\Business\Services\UserService;
 use Demoshop\Local\Business\Validation\ProductValidator;
 use Demoshop\Local\Business\Validation\UserValidator;
+use Demoshop\Local\Data\Repositories\CategoryRepository;
 use Demoshop\Local\Data\Repositories\ProductRepository;
 use Demoshop\Local\Data\Repositories\UserRepository;
 use Demoshop\Local\Infrastructure\DI\ServiceRegistry;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
+use Demoshop\Local\Presentation\controllers\CategoryController;
 use Demoshop\Local\Presentation\controllers\FragmentController;
 use Demoshop\Local\Presentation\controllers\ProductController;
 use Demoshop\Local\Presentation\controllers\UserController;
@@ -90,13 +95,18 @@ class Bootstrap
     {
         $this->registry->register(HttpRequest::class, fn() => new HttpRequest());
         $this->registry->register(IProductRepository::class, fn() => new ProductRepository());
-        $this->registry->register(IProductService::class, fn() =>
-        new ProductService($this->registry->get(IProductRepository::class), new ProductValidator())
+        $this->registry->register(IProductService::class,
+            fn() => new ProductService($this->registry->get(IProductRepository::class), new ProductValidator())
         );
 
         $this->registry->register(IUserRepository::class, fn() => new UserRepository());
-        $this->registry->register(IUserService::class, fn() =>
-        new UserService($this->registry->get(IUserRepository::class), new UserValidator())
+        $this->registry->register(IUserService::class,
+            fn() => new UserService($this->registry->get(IUserRepository::class), new UserValidator())
+        );
+
+        $this->registry->register(ICategoryRepository::class, fn() => new CategoryRepository());
+        $this->registry->register(ICategoryService::class,
+            fn() => new CategoryService($this->registry->get(ICategoryRepository::class))
         );
     }
 
@@ -105,16 +115,21 @@ class Bootstrap
      */
     private function initControllers(): void
     {
-        $this->registry->register(ProductController::class, fn() =>
-        new ProductController($this->registry->get(IProductService::class))
+        $this->registry->register(ProductController::class,
+            fn() => new ProductController($this->registry->get(IProductService::class))
         );
 
-        $this->registry->register(FragmentController::class, fn() =>
-        new FragmentController($this->registry->get(IProductService::class))
+        $this->registry->register(FragmentController::class,
+            fn() => new FragmentController($this->registry->get(IProductService::class),
+                $this->registry->get(ICategoryService::class))
         );
 
-        $this->registry->register(UserController::class, fn() =>
-        new UserController($this->registry->get(IUserService::class))
+        $this->registry->register(UserController::class,
+            fn() => new UserController($this->registry->get(IUserService::class))
+        );
+
+        $this->registry->register(CategoryController::class,
+            fn() => new CategoryController($this->registry->get(CategoryService::class))
         );
     }
 }

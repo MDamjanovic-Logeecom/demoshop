@@ -1,0 +1,115 @@
+.categories-layout {
+    display: flex;
+    gap: 20px;
+    min-height: 500px; /* match other fragments */
+}
+
+.categories-tree,
+.category-details {
+    flex: 1; /* both sides same size */
+    border: 1px solid #ccc;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Tree styling */
+.categories-tree ul {
+    list-style: none;
+    padding-left: 20px;
+    flex: 1; /* fill available height */
+    overflow-y: auto;
+}
+
+.categories-tree li {
+    cursor: pointer;
+    margin: 5px 0;
+}
+
+/* Bottom buttons in left panel */
+.tree-buttons {
+    display: flex;
+    justify-content: space-between; /* side by side */
+    margin-top: 10px;
+}
+
+.tree-buttons .tree-btn {
+    padding: 4px 8px;
+    cursor: pointer;
+    background-color: white;
+    border-color: #cccccc;
+}
+
+/* Right panel */
+.category-banner {
+    background-color: #cce7ff; /* light-pastel blue */
+    padding: 10px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.category-details label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.category-details input,
+.category-details select {
+    width: 60%;
+}
+
+/* Make description taller */
+.category-details textarea {
+    width: 60%;
+    height: 150px; /* taller */
+}
+
+/* Buttons at bottom */
+.details-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: auto; /* stick to bottom */
+}
+
+.details-buttons button {
+    padding: 4px 8px;
+    cursor: pointer;
+    background-color: white;
+    border-color: #cccccc;
+}
+
+/* --- Collapsible tree styles --- */
+.categories-tree ul ul {
+    list-style-type: none;
+    padding-left: 1.2em;
+    display: none; /* hide nested ULs only */
+}
+
+.categories-tree li {
+    position: relative;
+    cursor: pointer;
+    margin: 3px 0;
+}
+
+.categories-tree li::before {
+    content: '▶';
+    position: absolute;
+    left: -1em;
+    top: 0.2em;
+    font-size: 0.8em;
+    color: #555;
+    transition: transform 0.2s ease;
+}
+
+/* Opened state: arrow rotates down */
+.categories-tree li.expanded::before {
+    transform: rotate(90deg);
+}
+
+/* Show children when expanded */
+.categories-tree li.expanded > ul {
+    display: block;
+}
