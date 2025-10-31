@@ -63,29 +63,6 @@ function setActive(name) {
 }
 
 /**
- * Function for switching fragments in the admin_layout shell using the AJAX approach.
- *
- * @param name of the section to show (dashboard, products, categories)
- * @param push whether the browser's address bar is to be updated
- *
- * @returns {Promise<void>}
- */
-// async function navigate(name, push = true) {
-//     const url = routes[name]; // gets the  correct url from routes const
-//     const container = document.getElementById('content');
-//     container.innerHTML = '<p>Loading...</p>';
-//
-//     try {
-//         const html = await ajax.get(url);
-//         container.innerHTML = html; //replaces content in the designated spot with fetched fragment html
-//         setActive(name);
-//         if (push) history.pushState({name}, '', '/admin#' + name);
-//     } catch (err) {
-//         container.innerHTML = `<p style="color:red;">Error loading ${name}: ${err.message}</p>`;
-//     }
-// }
-
-/**
  * Listens to any clicks on the whole page, runs the navigate function if
  * element clicked is one of the menu buttons (.side-btn)
  */

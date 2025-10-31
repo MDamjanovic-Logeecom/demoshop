@@ -113,3 +113,9 @@
 .categories-tree li.expanded > ul {
     display: block;
 }
+
+.selected-category {
+    background-color: #e0f0ff;
+    border-radius: 4px;
+    padding: 2px 6px;
+}
