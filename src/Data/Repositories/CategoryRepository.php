@@ -22,6 +22,31 @@ class CategoryRepository implements ICategoryRepository
     }
 
     /**
+     * Update an existing category in the database.
+     *
+     * @param CategoryDTO $category
+     * @return CategoryDTO|null whether executed successfully.
+     */
+    public function update(CategoryDTO $category): ?CategoryDTO
+    {
+        $eloquentCategory = EloquentCategory::find($category->code);
+
+        if (!$eloquentCategory) {
+            return null;
+        }
+
+        $eloquentCategory->title = $category->title;
+        $eloquentCategory->code = $category->code;
+        $eloquentCategory->description = $category->description;
+
+        if ($eloquentCategory->save()) {
+            return $this->mapEloquentToDTO($eloquentCategory);
+        }
+
+        return null;
+    }
+
+    /**
      * Maps a row from the table and maps it to a Category model object.
      *
      * @param EloquentCategory $eloquentCategory from the database.

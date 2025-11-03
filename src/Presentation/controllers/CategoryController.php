@@ -6,6 +6,7 @@ use Demoshop\Local\Business\Interfaces\Repository\ICategoryRepository;
 use Demoshop\Local\Business\Interfaces\Service\ICategoryService;
 use Demoshop\Local\Infrastructure\http\HtmlResponse;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
+use Demoshop\Local\Infrastructure\http\JsonResponse;
 
 class CategoryController
 {
@@ -32,4 +33,17 @@ class CategoryController
 
         return $response;
     }
+
+    /**
+     * Updates an existing category.
+     *
+     * @param HttpRequest $request The HTTP request object containing POST data and files
+     *
+     * @return JsonResponse HTTP response indicating the result of the edit.
+     */
+//    public function editProduct(HttpRequest $request): JsonResponse
+//    {
+//        //TODO: finish this shit
+//        return null;
+//    }
 }

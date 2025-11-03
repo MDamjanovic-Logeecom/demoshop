@@ -1,3 +1,7 @@
+import { Ajax } from "../ajax.js";
+
+const ajax = new Ajax();
+
 /**
  * @typedef {Object} DashboardData
  * @property {number} productCount
@@ -7,7 +11,7 @@
  * @property {number} productViews
  */
 
-class DashboardFragment {
+export class Dashboard {
 
     async fetchData() {
         return await ajax.get('/admin/dashboard-data');
@@ -15,7 +19,9 @@ class DashboardFragment {
 
     async render() {
         const data = await this.fetchData();
-        return `
+
+        const content = document.getElementById('content');
+        content.innerHTML = `
             <h2>Dashboard</h2>
             <div class="dashboard-layout">
                 <div class="dashboard-left">

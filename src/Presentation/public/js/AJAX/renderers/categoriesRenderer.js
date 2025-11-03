@@ -1,4 +1,8 @@
-class CategoriesFragment {
+import { Ajax } from "../ajax.js";
+
+const ajax = new Ajax();
+
+export class Categories {
     async fetchData() {
         return await ajax.get('/admin/categories-data');
     }
@@ -27,6 +31,23 @@ class CategoriesFragment {
                 li.classList.toggle('expanded');
             });
         });
+    }
+
+    toggleEditMode(enable) {
+
+        const viewButtons = document.querySelector('.view-buttons');
+        const editButtons = document.querySelector('.edit-buttons');
+        const detailInputs = document.querySelectorAll('.category-details input, .category-details select, .category-details textarea');
+
+        if (enable) {
+            viewButtons.style.display = 'none';
+            editButtons.style.display = 'block';
+            detailInputs.forEach(input => input.disabled = false);
+        } else {
+            viewButtons.style.display = 'flex';
+            editButtons.style.display = 'none';
+            detailInputs.forEach(input => input.disabled = true);
+        }
     }
 
     addCategorySelectLogic(container, categories) {
@@ -61,8 +82,49 @@ class CategoriesFragment {
                     codeInput.value = category.code;
                     descriptionArea.value = category.description;
                     banner.textContent = `Selected: ${category.title}`;
+
+                    // Enable the Edit and Delete buttons in view mode
+                    detailPanel.querySelector('.edit-btn').disabled = false;
+                    detailPanel.querySelector('.view-buttons .delete-btn').disabled = false;
                 }
             });
+        });
+
+        // When clicking Edit in view mode
+        detailPanel.querySelector('.edit-btn').addEventListener('click', () => {
+            this.toggleEditMode(true);
+        });
+
+        // When clicking Cancel in edit mode
+        detailPanel.querySelector('.cancel-btn').addEventListener('click', () => {
+            this.toggleEditMode(false);
+            // optionally reset inputs to original values
+        });
+
+        // OK button would submit/save changes
+        detailPanel.querySelector('.ok-btn').addEventListener('click', async () => {
+            // gather input values and send ajax POST/PUT request
+            const updatedCategory = {
+                id: parseInt(detailPanel.querySelector('.selected-category')?.closest('li')?.dataset.id, 10),
+                title: detailPanel.querySelector('input[name="title"]').value,
+                parent_id: parseInt(detailPanel.querySelector('select[name="parent"]').value) || null,
+                code: detailPanel.querySelector('input[name="code"]').value,
+                description: detailPanel.querySelector('textarea[name="description"]').value,
+            };
+
+            try {
+                const result = await ajax.post('/admin/categories/update', updatedCategory);
+                if (result.status === 'success') {
+                    alert('Category updated!');
+                    this.toggleEditMode(false);
+                    // optionally re-render tree
+                } else {
+                    alert(result.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Update failed');
+            }
         });
     }
 
@@ -90,9 +152,18 @@ class CategoriesFragment {
                     <label>Code: <input type="text" name="code" disabled></label>
                     <label>Description: <textarea name="description" disabled></textarea></label>
                     <div class="details-buttons">
-                        <button type="button" class="delete-btn" disabled>Delete</button>
-                        <button type="button" class="cancel-btn" disabled>Cancel</button>
-                        <button type="button" class="ok-btn" disabled>OK</button>
+                        <!-- view mode -->
+                        <div class="view-buttons">
+                            <button type="button" class="delete-btn" disabled>Delete</button>
+                            <button type="button" class="edit-btn" disabled>Edit</button>
+                        </div>
+                    
+                        <!-- edit mode -->
+                        <div class="edit-buttons" style="display: none;">
+                            <button type="button" class="delete-btn">Delete</button>
+                            <button type="button" class="cancel-btn">Cancel</button>
+                            <button type="button" class="ok-btn">OK</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -105,6 +176,7 @@ class CategoriesFragment {
             this.addCategorySelectLogic(container, categories);
         });
 
-        return html;
+        const content = document.getElementById('content');
+        content.innerHTML = html;
     }
 }

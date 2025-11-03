@@ -19,16 +19,8 @@
         <main id="content" class="content"></main>
     </div>
 </div>
-<script src="/src/Presentation/public/js/AJAX/ajax.js"></script>
-<script src="/src/Presentation/public/js/AJAX/spa-router.js"></script>
+<script type="module" src="/src/Presentation/public/js/AJAX/main.js"></script>
 <script src="/src/Presentation/public/js/message.js"></script>
-
-<script src="/src/Presentation/public/js/AJAX/renderers/dashboardRenderer.js"></script>
-<script src="/src/Presentation/public/js/AJAX/renderers/productsRenderer.js"></script>
-<script src="/src/Presentation/public/js/AJAX/renderers/categoriesRenderer.js"></script>
-
-<script src="/src/Presentation/public/js/AJAX/products.js"></script>
-<script src="/src/Presentation/public/js/AJAX/categories.js"></script>
 </body>
 </html>
 
