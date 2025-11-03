@@ -129,7 +129,7 @@ class Bootstrap
         );
 
         $this->registry->register(CategoryController::class,
-            fn() => new CategoryController($this->registry->get(CategoryService::class))
+            fn() => new CategoryController($this->registry->get(ICategoryService::class))
         );
     }
 }

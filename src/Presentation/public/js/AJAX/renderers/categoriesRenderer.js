@@ -34,7 +34,6 @@ export class Categories {
     }
 
     toggleEditMode(enable) {
-
         const viewButtons = document.querySelector('.view-buttons');
         const editButtons = document.querySelector('.edit-buttons');
         const detailInputs = document.querySelectorAll('.category-details input, .category-details select, .category-details textarea');
@@ -43,6 +42,9 @@ export class Categories {
             viewButtons.style.display = 'none';
             editButtons.style.display = 'block';
             detailInputs.forEach(input => input.disabled = false);
+
+            const codeInput = document.querySelector('.category-details input[name="code"]');
+            codeInput.disabled = true;
         } else {
             viewButtons.style.display = 'flex';
             editButtons.style.display = 'none';
@@ -67,12 +69,13 @@ export class Categories {
         container.querySelectorAll('.category-item').forEach(item => {
             item.addEventListener('click', e => {
                 e.stopPropagation(); // avoid collapsing when selecting
+                const li = item.closest('li');
+                if (!li) return;
 
                 // Remove previous highlight
                 container.querySelectorAll('.selected-category').forEach(el => el.classList.remove('selected-category'));
-                item.classList.add('selected-category');
+                li.classList.add('selected-category');
 
-                const li = item.closest('li');
                 const id = parseInt(li.dataset.id, 10);
                 const category = categories.find(c => c.id === id);
 
@@ -103,13 +106,16 @@ export class Categories {
 
         // OK button would submit/save changes
         detailPanel.querySelector('.ok-btn').addEventListener('click', async () => {
+            const selectedSpan = container.querySelector('.selected-category');
+            if (!selectedSpan) return alert('No category selected');
+
             // gather input values and send ajax POST/PUT request
             const updatedCategory = {
-                id: parseInt(detailPanel.querySelector('.selected-category')?.closest('li')?.dataset.id, 10),
-                title: detailPanel.querySelector('input[name="title"]').value,
-                parent_id: parseInt(detailPanel.querySelector('select[name="parent"]').value) || null,
-                code: detailPanel.querySelector('input[name="code"]').value,
-                description: detailPanel.querySelector('textarea[name="description"]').value,
+                id: parseInt(selectedSpan.dataset.id, 10),
+                title: titleInput.value,
+                parent_id: parseInt(parentSelect.value) || null,
+                code: codeInput.value,
+                description: descriptionArea.value
             };
 
             try {
@@ -117,7 +123,15 @@ export class Categories {
                 if (result.status === 'success') {
                     alert('Category updated!');
                     this.toggleEditMode(false);
-                    // optionally re-render tree
+
+                    // Re-fetch categories and re-render only the <ul> tree
+                    const categories = await this.fetchData();
+                    const treeList = container.querySelector('.tree-list'); // only the tree
+                    treeList.innerHTML = this.buildTree(categories);
+
+                    this.addExpandCollapseLogic(treeList);
+                    this.addCategorySelectLogic(container, categories);
+
                 } else {
                     alert(result.message);
                 }
@@ -134,7 +148,10 @@ export class Categories {
         const html = `
             <div class="categories-layout">
                 <div class="categories-tree">
-                    ${this.buildTree(categories)}
+                    <div class="tree-list">
+                        ${this.buildTree(categories)}
+                    </div>
+                
                     <div class="tree-buttons">
                         <button type="button" class="tree-btn add-root-btn">Add root category</button>
                         <button type="button" class="tree-btn add-sub-btn">Add subcategory</button>

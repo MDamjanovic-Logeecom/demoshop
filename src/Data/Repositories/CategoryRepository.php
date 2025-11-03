@@ -27,9 +27,9 @@ class CategoryRepository implements ICategoryRepository
      * @param CategoryDTO $category
      * @return CategoryDTO|null whether executed successfully.
      */
-    public function update(CategoryDTO $category): ?CategoryDTO
+    public function update(CategoryDTO $category): ?CategoryDTO //TODO do validation
     {
-        $eloquentCategory = EloquentCategory::find($category->code);
+        $eloquentCategory = EloquentCategory::where('code', $category->code)->first();
 
         if (!$eloquentCategory) {
             return null;
