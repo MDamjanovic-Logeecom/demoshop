@@ -17,7 +17,7 @@ $adminRoutes = [
 
     new Route('POST', '/admin/categories/update', 'CategoryController::editCategory'),
     new Route('POST', '/admin/categories/create', 'CategoryController::addCategory'),
-    new Route('POST', '/admin/categories/delete', 'CategoryController::deleteCategory'),
+    new Route('POST', '/admin/categories/delete', 'CategoryController::deleteCategoryByCode'),
 
     new Route('GET',  '/admin/products/create',   'ProductController::showAddForm'),
     new Route('POST', '/admin/products/create',   'ProductController::addProduct'),

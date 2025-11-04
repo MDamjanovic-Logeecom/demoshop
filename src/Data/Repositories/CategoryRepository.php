@@ -27,7 +27,7 @@ class CategoryRepository implements ICategoryRepository
      * @param CategoryDTO $category
      * @return CategoryDTO|null whether executed successfully.
      */
-    public function update(CategoryDTO $category): ?CategoryDTO //TODO do validation?
+    public function update(CategoryDTO $category): ?CategoryDTO
     {
         $eloquentCategory = EloquentCategory::where('code', $category->code)->first();
 
@@ -67,6 +67,24 @@ class CategoryRepository implements ICategoryRepository
         }
 
         return null;
+    }
+
+    /**
+     * Delete a category from the database by its SKU.
+     *
+     * @param string $code of the category to delete.
+     *
+     * @return bool True if the category was deleted, false on failure or if not found.
+     */
+    public function deleteByCode(string $code): bool
+    {
+        $eloquentCategory = EloquentCategory::where('code', $code)->first();
+
+        if (!$eloquentCategory) {
+            return false;
+        }
+
+        return $eloquentCategory->delete();
     }
 
     /**

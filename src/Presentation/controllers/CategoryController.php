@@ -5,6 +5,7 @@ namespace Demoshop\Local\Presentation\controllers;
 use Demoshop\Local\Business\Interfaces\Repository\ICategoryRepository;
 use Demoshop\Local\Business\Interfaces\Service\ICategoryService;
 use Demoshop\Local\DTO\CategoryDTO;
+use Demoshop\Local\Infrastructure\http\ErrorResponse;
 use Demoshop\Local\Infrastructure\http\HtmlResponse;
 use Demoshop\Local\Infrastructure\http\HttpRequest;
 use Demoshop\Local\Infrastructure\http\JsonResponse;
@@ -100,6 +101,37 @@ class CategoryController
                 'description' => $returnDTO->description,
             ] : null,
         ]);
+    }
+
+    /**
+     * Deletes a category based on the SKU received via POST request.
+     *
+     * @param HttpRequest $request The HTTP request object containing POST data
+     *
+     * @return JsonResponse|ErrorResponse HTTP response indicating the result of the deletion.
+     */
+    public function deleteCategoryByCode(HttpRequest $request): JsonResponse|ErrorResponse
+    {
+        if (!$request->isPost()) {
+            return new ErrorResponse('Invalid request method.', 405);
+        }
+
+        // Read raw JSON body
+        $rawBody = file_get_contents('php://input');
+        $data = json_decode($rawBody, true);
+
+        if (!isset($data['code'])) {
+            return new ErrorResponse('Missing code.', 400);
+        }
+
+        $code = $data['code'];
+        $deleted = $this->service->deleteByCode($code);
+
+        if ($deleted) {
+            return new JsonResponse(['status' => 'success', 'message' => 'Category deleted successfully.']);
+        }
+
+        return new JsonResponse(['status' => 'error', 'message' => 'Failed to delete category.']);
     }
 
     /**

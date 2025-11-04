@@ -46,4 +46,20 @@ class CategoryService implements ICategoryService
     {
         return $this->repository->create($categoryDTO);
     }
+
+    /**
+     * Deletes a category by its code.
+     *
+     * @param string $code The SKU of the product to delete.
+     *
+     * @return bool True if deletion successful.
+     */
+    public function deleteByCode(string $code): bool
+    {
+        if (empty($code)) {
+            return false;
+        }
+
+        return $this->repository->deleteByCode($code);
+    }
 }

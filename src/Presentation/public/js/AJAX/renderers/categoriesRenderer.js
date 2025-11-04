@@ -1,4 +1,4 @@
-import { Ajax } from "../ajax.js";
+import {Ajax} from "../ajax.js";
 
 const ajax = new Ajax();
 
@@ -84,6 +84,12 @@ export class Categories {
                 parentSelect.disabled = enable === 'create-root'; // disable only for root
                 break;
 
+            case 'clear' :
+                titleInput.value = '';
+                codeInput.value = '';
+                descriptionArea.value = '';
+                parentSelect.value = '';
+
             case 'view' :
             default : {
                 viewButtons.style.display = 'flex';
@@ -102,6 +108,8 @@ export class Categories {
 
         const addRootBtn = container.querySelector('.add-root-btn');
         const addSubBtn = container.querySelector('.add-sub-btn');
+        const viewDeleteBtn = detailPanel.querySelector('.view-buttons .delete-btn');
+        const editDeleteBtn = detailPanel.querySelector('.edit-buttons .delete-btn');
 
         // Populate parent <select> options once
         parentSelect.innerHTML = `
@@ -230,6 +238,48 @@ export class Categories {
             }
         });
 
+        /**
+         * Deletes selected category
+         * (attaches listener for set delete action to delete buttons)
+         *///TODO: CHECK IF PRODUCT IS CONNECTED TO IT - MAKE THAT CHECK HERE OR AT BACKEND! (when products-category connection implemented)
+        const attachDeleteListener = (btn) => {
+            const freshBtn = btn.cloneNode(true);
+            btn.replaceWith(freshBtn);
+
+            freshBtn.addEventListener('click', async () => {
+                const selectedSpan = container.querySelector('.selected-category');
+                if (!selectedSpan) return alert('No category selected');
+
+                const code = codeInput.value;
+                if (!code) return alert('Category code not found.');
+
+                if (!confirm(`Are you sure you want to delete category "${titleInput.value}"?`)) return;
+
+                try {
+                    const result = await ajax.post('/admin/categories/delete', {code});
+
+                    if (result.status === 'success') {
+                        alert('Category deleted successfully.');
+                        this.toggleEditMode('clear');
+
+                        const categories = await this.fetchData();
+                        const treeList = container.querySelector('.tree-list');
+                        treeList.innerHTML = this.buildTree(categories);
+
+                        this.addExpandCollapseLogic(treeList);
+                        this.categoryEventsLogic(container, categories);
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Failed to delete category.');
+                }
+            });
+        };
+
+        attachDeleteListener(viewDeleteBtn);
+        attachDeleteListener(editDeleteBtn);
     }
 
     /**
@@ -332,7 +382,7 @@ export class Categories {
             </div>
     `;
 
-        // Return as a fragment first (so
+        // Return as a fragment first
         setTimeout(() => {
             const container = document.querySelector('.categories-tree');
             if (container) this.addExpandCollapseLogic(container);
