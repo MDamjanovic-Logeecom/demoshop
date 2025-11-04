@@ -27,7 +27,7 @@ class CategoryRepository implements ICategoryRepository
      * @param CategoryDTO $category
      * @return CategoryDTO|null whether executed successfully.
      */
-    public function update(CategoryDTO $category): ?CategoryDTO //TODO do validation
+    public function update(CategoryDTO $category): ?CategoryDTO //TODO do validation?
     {
         $eloquentCategory = EloquentCategory::where('code', $category->code)->first();
 
@@ -38,6 +38,29 @@ class CategoryRepository implements ICategoryRepository
         $eloquentCategory->title = $category->title;
         $eloquentCategory->code = $category->code;
         $eloquentCategory->description = $category->description;
+
+        if ($eloquentCategory->save()) {
+            return $this->mapEloquentToDTO($eloquentCategory);
+        }
+
+        return null;
+    }
+
+    /**
+     * Insert a new category into the database.
+     *
+     * @param CategoryDTO $category The product object to insert.
+     *
+     * @return CategoryDTO|null whether executed successfully.
+     */
+    public function create(CategoryDTO $category): ?CategoryDTO
+    {
+        $eloquentCategory = new EloquentCategory([
+            'title' => $category->title,
+            'parent_id' => $category->parent_id,
+            'code' => $category->code,
+            'description' => $category->description,
+        ]);
 
         if ($eloquentCategory->save()) {
             return $this->mapEloquentToDTO($eloquentCategory);

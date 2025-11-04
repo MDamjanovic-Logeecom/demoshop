@@ -16,6 +16,7 @@ $adminRoutes = [
     new Route('GET',  '/admin/products-data',     'FragmentController::products'),
 
     new Route('POST', '/admin/categories/update', 'CategoryController::editCategory'),
+    new Route('POST', '/admin/categories/create', 'CategoryController::addCategory'),
     new Route('POST', '/admin/categories/delete', 'CategoryController::deleteCategory'),
 
     new Route('GET',  '/admin/products/create',   'ProductController::showAddForm'),

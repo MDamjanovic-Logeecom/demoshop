@@ -41,5 +41,3 @@ export class Ajax {
         return res.json();
     }
 }
-
-//window.ajax = new Ajax();

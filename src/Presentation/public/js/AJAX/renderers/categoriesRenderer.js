@@ -3,6 +3,11 @@ import { Ajax } from "../ajax.js";
 const ajax = new Ajax();
 
 export class Categories {
+    /**
+     * Get all categories
+     *
+     * @returns {Promise<string>}
+     */
     async fetchData() {
         return await ajax.get('/admin/categories-data');
     }
@@ -34,25 +39,60 @@ export class Categories {
     }
 
     toggleEditMode(enable) {
-        const viewButtons = document.querySelector('.view-buttons');
-        const editButtons = document.querySelector('.edit-buttons');
-        const detailInputs = document.querySelectorAll('.category-details input, .category-details select, .category-details textarea');
+        const detailPanel = document.querySelector('.category-details');
+        const viewButtons = detailPanel.querySelector('.view-buttons');
+        const editButtons = detailPanel.querySelector('.edit-buttons');
+        const createButtons = detailPanel.querySelector('.create-buttons');
+        const detailInputs = detailPanel.querySelectorAll('input, select, textarea');
+        const titleInput = detailPanel.querySelector('input[name="title"]');
+        const codeInput = detailPanel.querySelector('input[name="code"]');
+        const parentSelect = detailPanel.querySelector('select[name="parent"]');
+        const descriptionArea = detailPanel.querySelector('textarea[name="description"]');
+        const banner = detailPanel.querySelector('.category-banner');
 
-        if (enable) {
-            viewButtons.style.display = 'none';
-            editButtons.style.display = 'block';
-            detailInputs.forEach(input => input.disabled = false);
+        // resetting all buttons
+        viewButtons.style.display = 'none';
+        editButtons.style.display = 'none';
+        createButtons.style.display = 'none';
 
-            const codeInput = document.querySelector('.category-details input[name="code"]');
-            codeInput.disabled = true;
-        } else {
-            viewButtons.style.display = 'flex';
-            editButtons.style.display = 'none';
-            detailInputs.forEach(input => input.disabled = true);
+        detailInputs.forEach(input => (input.disabled = true));
+
+        switch (enable) {
+            case 'edit' :
+                editButtons.style.display = 'block';
+                detailInputs.forEach(input => (input.disabled = false));
+                codeInput.disabled = true;
+                break;
+
+            case 'create-sub':
+            case 'create-root':
+                createButtons.style.display = 'block';
+                detailInputs.forEach(input => (input.disabled = false));
+
+                titleInput.value = '';
+                codeInput.value = '';
+                descriptionArea.value = '';
+                parentSelect.value = '';
+
+                // banner
+                banner.textContent =
+                    enable === 'create-sub'
+                        ? 'Adding new subcategory'
+                        : 'Adding new root category';
+
+                codeInput.disabled = false;
+                parentSelect.disabled = enable === 'create-root'; // disable only for root
+                break;
+
+            case 'view' :
+            default : {
+                viewButtons.style.display = 'flex';
+                break;
+            }
         }
     }
 
-    addCategorySelectLogic(container, categories) {
+    categoryEventsLogic(container, categories) {
         const detailPanel = document.querySelector('.category-details');
         const titleInput = detailPanel.querySelector('input[name="title"]');
         const parentSelect = detailPanel.querySelector('select[name="parent"]');
@@ -60,15 +100,22 @@ export class Categories {
         const descriptionArea = detailPanel.querySelector('textarea[name="description"]');
         const banner = detailPanel.querySelector('.category-banner');
 
+        const addRootBtn = container.querySelector('.add-root-btn');
+        const addSubBtn = container.querySelector('.add-sub-btn');
+
         // Populate parent <select> options once
         parentSelect.innerHTML = `
             <option value="">Select parent</option>
             ${categories.map(c => `<option value="${c.id}">${c.title}</option>`).join('')}
         `;
 
+        /**
+         * Tree selection
+         */
         container.querySelectorAll('.category-item').forEach(item => {
             item.addEventListener('click', e => {
                 e.stopPropagation(); // avoid collapsing when selecting
+                this.toggleEditMode('view');
                 const li = item.closest('li');
                 if (!li) return;
 
@@ -93,18 +140,60 @@ export class Categories {
             });
         });
 
-        // When clicking Edit in view mode
+        /**
+         * Edit mode activation
+         */
         detailPanel.querySelector('.edit-btn').addEventListener('click', () => {
-            this.toggleEditMode(true);
+            this.toggleEditMode('edit');
         });
 
-        // When clicking Cancel in edit mode
+        /**
+         * Edit mode deactivation
+         */
         detailPanel.querySelector('.cancel-btn').addEventListener('click', () => {
-            this.toggleEditMode(false);
-            // optionally reset inputs to original values
+            this.toggleEditMode('view');
         });
 
-        // OK button would submit/save changes
+        /**
+         * Create mode deactivation
+         */
+        detailPanel.querySelector('.cancel-create-btn').addEventListener('click', () => {
+            this.toggleEditMode('view');
+        });
+
+        /**
+         * Create root mode activation
+         */
+        addRootBtn.addEventListener('click', () => {
+            this.currentMode = 'create-root';
+            this.toggleEditMode('create-root');
+        });
+
+        /**
+         * Create subcategory mode activation
+         */
+        addSubBtn.addEventListener('click', () => {
+            this.currentMode = 'create-sub';
+            this.toggleEditMode('create-sub');
+        });
+
+        /**
+         * Create a new category
+         */
+        const okCreateBtn = document.querySelector('.ok-create-btn');
+
+        // Replaces the button with a fresh clone to remove previous listeners
+        okCreateBtn.replaceWith(okCreateBtn.cloneNode(true));
+
+        const freshOkCreateBtn = document.querySelector('.ok-create-btn');
+        freshOkCreateBtn.addEventListener('click', async () => {
+            const isSub = this.currentMode === 'create-sub';
+            await this.createCategory(isSub, container);
+        });
+
+        /**
+         * Save edit on "OK" button press
+         */
         detailPanel.querySelector('.ok-btn').addEventListener('click', async () => {
             const selectedSpan = container.querySelector('.selected-category');
             if (!selectedSpan) return alert('No category selected');
@@ -122,7 +211,7 @@ export class Categories {
                 const result = await ajax.post('/admin/categories/update', updatedCategory);
                 if (result.status === 'success') {
                     alert('Category updated!');
-                    this.toggleEditMode(false);
+                    this.toggleEditMode('view');
 
                     // Re-fetch categories and re-render only the <ul> tree
                     const categories = await this.fetchData();
@@ -130,7 +219,7 @@ export class Categories {
                     treeList.innerHTML = this.buildTree(categories);
 
                     this.addExpandCollapseLogic(treeList);
-                    this.addCategorySelectLogic(container, categories);
+                    this.categoryEventsLogic(container, categories);
 
                 } else {
                     alert(result.message);
@@ -140,6 +229,57 @@ export class Categories {
                 alert('Update failed');
             }
         });
+
+    }
+
+    /**
+     * Category creation
+     *
+     * @param isSub - defines whether the new item is a subcategory or root category
+     * @param container
+     * @returns {Promise<void>}
+     */
+    async createCategory(isSub = false, container) {
+        const detailPanel = document.querySelector('.category-details');
+        const titleInput = detailPanel.querySelector('input[name="title"]');
+        const codeInput = detailPanel.querySelector('input[name="code"]');
+        const parentSelect = detailPanel.querySelector('select[name="parent"]');
+        const descriptionArea = detailPanel.querySelector('textarea[name="description"]');
+
+        if (!titleInput.value.trim() || !codeInput.value.trim()) {
+            alert('Title and code are required.');
+            return;
+        }
+
+        const parentId = isSub ? parseInt(parentSelect.value) || null : null;
+
+        const newCategory = {
+            title: titleInput.value,
+            code: codeInput.value,
+            description: descriptionArea.value,
+            parent_id: parentId
+        };
+
+        try {
+            const result = await ajax.post('/admin/categories/create', newCategory);
+            if (result.status === 'success') {
+                alert('Category created!');
+                this.toggleEditMode('view');
+
+                // Re-fetch categories and re-render only the <ul> tree
+                const categories = await this.fetchData();
+                const treeList = container.querySelector('.tree-list'); // only the tree
+                treeList.innerHTML = this.buildTree(categories);
+
+                this.addExpandCollapseLogic(treeList);
+                this.categoryEventsLogic(container, categories);
+            } else {
+                alert(result.message);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Category creation failed');
+        }
     }
 
     async render() {
@@ -181,16 +321,22 @@ export class Categories {
                             <button type="button" class="cancel-btn">Cancel</button>
                             <button type="button" class="ok-btn">OK</button>
                         </div>
+                        
+                        <!-- create mode -->
+                        <div class="create-buttons" style="display: none;">
+                            <button type="button" class="cancel-create-btn">Cancel</button>
+                            <button type="button" class="ok-create-btn">OK</button>
+                        </div>
                     </div>
                 </div>
             </div>
     `;
 
-        // Return as a fragment first
+        // Return as a fragment first (so
         setTimeout(() => {
             const container = document.querySelector('.categories-tree');
             if (container) this.addExpandCollapseLogic(container);
-            this.addCategorySelectLogic(container, categories);
+            this.categoryEventsLogic(container, categories);
         });
 
         const content = document.getElementById('content');

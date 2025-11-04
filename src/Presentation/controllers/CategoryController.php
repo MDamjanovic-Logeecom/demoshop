@@ -46,25 +46,59 @@ class CategoryController
     {
         // JSON input
         $data = json_decode(file_get_contents('php://input'), true) ?? [];
-
         $categoryDTO = $this->collectFormData($data, $request);
 
         $updatedCategory = $this->service->update($categoryDTO);
 
         $success = ($updatedCategory !== null);
-        $status  = $success ? 'success' : 'error';
+        $status = $success ? 'success' : 'error';
         $message = $success ? 'Category edited successfully.' : 'Failed to edit category.';
 
         return new JsonResponse([
-            'status'  => $status,
+            'status' => $status,
             'message' => $message,
-            'data'    => $updatedCategory ? [
+            'data' => $updatedCategory ? [
                 'id' => $updatedCategory->id,
                 'title' => $updatedCategory->title,
                 'parent_id' => $updatedCategory->parent_id,
                 'code' => $updatedCategory->code,
                 'description' => $updatedCategory->description,
-                ] : null,
+            ] : null,
+        ]);
+    }
+
+    /**
+     * Creates a new product using submitted POST data and optional uploaded image.
+     *
+     * @param HttpRequest $request The HTTP request object containing POST data and uploaded files.
+     *
+     * @return JsonResponse HTTP response object for redirection after creation.
+     */
+    public function addCategory(HttpRequest $request): JsonResponse
+    {
+        $data = json_decode(file_get_contents('php://input'), true) ?? [];
+        $categoryDTO = $this->collectFormData($data, $request);
+
+        $returnDTO = $this->service->create($categoryDTO);
+
+        $success = true;
+        if ($returnDTO == null) {
+            $success = false;
+        }
+
+        $status = $success ? 'success' : 'error';
+        $message = $success ? 'Product added successfully.' : 'Failed to add product.';
+
+        return new JsonResponse([
+            'status' => $status,
+            'message' => $message,
+            'data' => $returnDTO ? [
+                'id' => $returnDTO->id,
+                'title' => $returnDTO->title,
+                'parent_id' => $returnDTO->parent_id,
+                'code' => $returnDTO->code,
+                'description' => $returnDTO->description,
+            ] : null,
         ]);
     }
 
@@ -79,11 +113,11 @@ class CategoryController
     private function collectFormData(array $data, HttpRequest $request): CategoryDTO
     {
         return new CategoryDTO(
-        id: $data['id'] ?? $request->getHttpPost('id', 0),
-        title: $data['title'] ?? $request->getHttpPost('title', ''),
-        parent_id: $data['parent_id'] ?? $request->getHttpPost('parent', null),
-        code: $data['code'] ?? $request->getHttpPost('code', ''),
-        description: $data['description'] ?? $request->getHttpPost('description', ''),
-    );
+            id: $data['id'] ?? $request->getHttpPost('id', 0),
+            title: $data['title'] ?? $request->getHttpPost('title', ''),
+            parent_id: $data['parent_id'] ?? $request->getHttpPost('parent', null),
+            code: $data['code'] ?? $request->getHttpPost('code', ''),
+            description: $data['description'] ?? $request->getHttpPost('description', ''),
+        );
     }
 }

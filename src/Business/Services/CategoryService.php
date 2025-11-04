@@ -34,4 +34,16 @@ class CategoryService implements ICategoryService
     {
         return $this->repository->update($categoryDTO);
     }
+
+    /**
+     * Creates a new category.
+     *
+     * @param CategoryDTO $categoryDTO Object.
+     *
+     * @return CategoryDTO|null DTO if the product was successfully created, null otherwise.
+     */
+    public function create(CategoryDTO $categoryDTO): ?CategoryDTO
+    {
+        return $this->repository->create($categoryDTO);
+    }
 }
