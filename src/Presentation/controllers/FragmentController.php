@@ -99,8 +99,9 @@ class FragmentController
         $enabledOnly = $request->getHttpGet('enabledOnly') === 'true';
         $titleAsc = $request->getHttpGet('titleAsc');
         $priceAsc = $request->getHttpGet('priceAsc');
+        $page = $request->getHttpGet('page');
 
-        $products = $this->productService->getFiltered($search, $enabledOnly, $titleAsc, $priceAsc);
+        $result = $this->productService->getFiltered($search, $enabledOnly, $titleAsc, $priceAsc, $page);
 
         $data = array_map(fn($product) => [
             'sku' => $product->sku,
@@ -112,8 +113,12 @@ class FragmentController
             'enabled' => $product->enabled,
             'price' => $product->price,
             'image' => $product->image,
-        ], $products);
+        ], $result['products']);
 
-        return new JsonResponse($data);
+        return new JsonResponse([
+            'products' => $data,
+            'totalPages' => $result['totalPages'],
+            'currentPage' => $result['currentPage'],
+        ]);
     }
 }

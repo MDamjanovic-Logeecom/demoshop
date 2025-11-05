@@ -46,9 +46,19 @@ export class Products {
         if (this.filters.priceAsc !== null)
             params.append('priceAsc', this.filters.priceAsc ? 'true' : 'false');
 
-        const query = params.toString() ? `?${params.toString()}` : '';
+        if (this.filters.page !== null)
+            params.append('page', this.filters.page);
 
-        return await ajax.get(`/admin/products-data${query}`);
+        const query = params.toString() ? `?${params.toString()}` : '';
+        const response = await ajax.get(`/admin/products-data${query}`);
+
+        // save pagination info for renderPagination
+        this.pagination = {
+            totalPages: response.totalPages ?? 1,
+            currentPage: response.currentPage ?? 1
+        };
+
+        return response.products ?? [];
     }
 
     /**
@@ -219,6 +229,7 @@ export class Products {
                     
                 </tbody>
             </table>
+            <div id="pagination"></div>
     `;
 
         // Insert HTML into container first
@@ -226,6 +237,7 @@ export class Products {
         content.innerHTML = html;
 
         this.renderTable(products);
+        this.renderPagination();
 
         content.addEventListener('click', async (e) => {
             const btn = e.target.closest('.delete-btn');
@@ -294,4 +306,29 @@ export class Products {
             });
         });
     }
+
+    /**
+     * Renders Pagination buttons under table
+     */
+    renderPagination() {
+        const paginationContainer = document.getElementById('pagination');
+        if (!paginationContainer || !this.pagination) return;
+
+        const { totalPages, currentPage } = this.pagination;
+        let html = '';
+
+        html += `<button ${currentPage <= 1 ? 'disabled' : ''} data-page="${currentPage - 1}">Prev</button>`;
+        html += `<span> Page ${currentPage} of ${totalPages} </span>`;
+        html += `<button ${currentPage >= totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">Next</button>`;
+
+        paginationContainer.innerHTML = html;
+
+        paginationContainer.querySelectorAll('button[data-page]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const newPage = parseInt(btn.dataset.page, 10);
+                await this.changePage(newPage);
+            });
+        });
+    }
+
 }

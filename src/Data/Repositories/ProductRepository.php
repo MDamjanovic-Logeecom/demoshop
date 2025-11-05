@@ -69,10 +69,11 @@ class ProductRepository implements IProductRepository
      * @param bool $enabledOnly
      * @param string|null $titleAsc
      * @param string|null $priceAsc
+     * @param int $page
      *
      * @return array
      */
-    public function filterProducts(string $search, bool $enabledOnly, ?string $titleAsc, ?string $priceAsc): array
+    public function filterProducts(string $search, bool $enabledOnly, ?string $titleAsc, ?string $priceAsc, int $page): array
     {
         $query = EloquentProduct::query();
 
@@ -96,9 +97,21 @@ class ProductRepository implements IProductRepository
             $query->orderBy('price', $priceAsc === 'true' ? 'asc' : 'desc');
         }
 
-        $eloquentProducts = $query->get();
+        //$eloquentProducts = $query->get();
+        // Get total before slicing
+        $total = $query->count();
 
-        return array_map([$this, 'mapEloquentToDTO'], $eloquentProducts->all());
+        $totalPages = (int) max(1, ceil($total / 10));
+        $page = max(1, min($page, $totalPages));
+
+        // forPage(page, per page) applies limit/offset
+        $eloquentProducts = $query->forPage($page, 10)->get();
+
+        return [
+            'products' => array_map([$this, 'mapEloquentToDTO'], $eloquentProducts->all()),
+            'totalPages' => $totalPages,
+            'currentPage' => $page,
+        ];
     }
 
     /**
