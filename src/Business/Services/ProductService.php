@@ -68,6 +68,21 @@ class ProductService implements IProductService
     }
 
     /**
+     * Receives filter parameters, returns filtered data
+     *
+     * @param string $search
+     * @param bool $enabledOnly
+     * @param string|null $titleAsc
+     * @param string|null $priceAsc
+     *
+     * @return array
+     */
+    public function getFiltered(string $search, bool $enabledOnly, ?string $titleAsc, ?string $priceAsc): array
+    {
+        return $this->repository->filterProducts($search, $enabledOnly, $titleAsc, $priceAsc);
+    }
+
+    /**
      * Deletes a product by SKU.
      *
      * @param string $sku The SKU of the product to delete.

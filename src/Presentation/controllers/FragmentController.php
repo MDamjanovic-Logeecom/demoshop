@@ -89,11 +89,18 @@ class FragmentController
     /**
      * Sends the products list fragment to be displayed in the layout shell.
      *
+     * @param HttpRequest $request
+     *
      * @return JsonResponse
      */
-    public function products(): JsonResponse
+    public function products(HttpRequest $request): JsonResponse
     {
-        $products = $this->productService->getAll();
+        $search = $request->getHttpGet('search') ?? '';
+        $enabledOnly = $request->getHttpGet('enabledOnly') === 'true';
+        $titleAsc = $request->getHttpGet('titleAsc');
+        $priceAsc = $request->getHttpGet('priceAsc');
+
+        $products = $this->productService->getFiltered($search, $enabledOnly, $titleAsc, $priceAsc);
 
         $data = array_map(fn($product) => [
             'sku' => $product->sku,

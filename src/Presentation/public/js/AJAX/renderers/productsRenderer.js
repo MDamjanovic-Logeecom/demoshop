@@ -13,9 +13,133 @@ const ajax = new Ajax();
  */
 
 export class Products {
+    /**
+     * Sets the values for query fetch parameters
+     */
+    constructor() {
+        this.filters = {
+            searchTerm: '',
+            enabledOnly: false,
+            titleAsc: null,  // null = no sort, true = ascending, false = descending
+            priceAsc: null,
+            page: 1
+        };
+    }
 
+    /**
+     * Fetch the data from the server while applying filters
+     *
+     * @returns {Promise<string>}
+     */
     async fetchData() {
-        return await ajax.get('/admin/products-data');
+        const params = new URLSearchParams();
+
+        if (this.filters.searchTerm)
+            params.append('search', this.filters.searchTerm);
+
+        if (this.filters.enabledOnly)
+            params.append('enabledOnly', 'true');
+
+        if (this.filters.titleAsc !== null)
+            params.append('titleAsc', this.filters.titleAsc ? 'true' : 'false');
+
+        if (this.filters.priceAsc !== null)
+            params.append('priceAsc', this.filters.priceAsc ? 'true' : 'false');
+
+        const query = params.toString() ? `?${params.toString()}` : '';
+
+        return await ajax.get(`/admin/products-data${query}`);
+    }
+
+    /**
+     * Search for products matching search term from input
+     *
+     * @param searchTerm
+     *
+     * @returns {Promise<void>}
+     */
+    async search(searchTerm){
+        if (!searchTerm) return;
+
+        this.filters.searchTerm = searchTerm.toLowerCase().trim();
+        this.filters.page = 1;
+        const products = await this.fetchData();
+        this.renderTable(products);
+    }
+
+    /**
+     * Filters out / in the enabled products
+     *
+     * @returns {Promise<void>}
+     */
+    async filter(){
+        this.filters.enabledOnly = !this.filters.enabledOnly;
+        this.filters.page = 1;
+        const products = await this.fetchData();
+        this.renderTable(products);
+    }
+
+    /**
+     * Handles sorting toggles and updates filters
+     *
+     * @param column
+     *
+     * @returns {Promise<void>}
+     */
+    async handleSort(column) {
+        if (column === 'title') {
+            // toggle: null > true > false > null
+            this.filters.titleAsc = this.filters.titleAsc === null
+                ? true
+                : this.filters.titleAsc === true
+                    ? false
+                    : null;
+        } else if (column === 'price') {
+            this.filters.priceAsc = this.filters.priceAsc === null
+                ? true
+                : this.filters.priceAsc === true
+                    ? false
+                    : null;
+        }
+
+        this.filters.page = 1;
+        const products = await this.fetchData();
+        this.renderTable(products);
+
+        // Visual indicator arrows in header
+        this.updateSortIndicators();
+    }
+
+    /**
+     * Visual feedback in table headers
+     */
+    updateSortIndicators() {
+        const titleTh = document.querySelector('th[data-column="title"]');
+        const priceTh = document.querySelector('th[data-column="price"]');
+
+        // Clearing text from columns first
+        [titleTh, priceTh].forEach(th => th.textContent = th.dataset.column.charAt(0).toUpperCase() + th.dataset.column.slice(1));
+
+        if (this.filters.titleAsc !== null)
+            titleTh.textContent += this.filters.titleAsc ? ' ▲' : ' ▼';
+        if (this.filters.priceAsc !== null)
+            priceTh.textContent += this.filters.priceAsc ? ' ▲' : ' ▼';
+    }
+
+    /**
+     * Handles pagination controls (Next / Prev / direct page number)
+     *
+     * @param newPage
+     *
+     * @returns {Promise<void>}
+     */
+    async changePage(newPage) {
+        if (newPage < 1) return;
+        this.filters.page = newPage;
+
+        const products = await this.fetchData();
+        this.renderTable(products);
+        this.renderPagination(); // Refresh pagination UI
     }
 
     /**
@@ -54,6 +178,11 @@ export class Products {
         }
     }
 
+    /**
+     * Render the products page
+     *
+     * @returns {Promise<void>}
+     */
     async render() {
         const products = await this.fetchData();
         const html = `
@@ -66,52 +195,37 @@ export class Products {
                     <button>Enable selected</button>
                 </div>
                 <div class="right-buttons">
-                    <button>Filter</button>
+                    <input type="text" id="product-search" placeholder="Search products..." />
+                    <button id="filter-btn">Filter</button>
                 </div>
             </div>
         
-            <table>
+            <table id="products-table">
                 <thead>
                 <tr>
                     <th>Selected</th>
-                    <th>Title</th>
+                    <th data-column="title" style="cursor:pointer">Title</th>
                     <th>SKU</th>
                     <th>Brand</th>
                     <th>Category</th>
                     <th>Short description</th>
-                    <th>Price</th>
+                    <th data-column="price" style="cursor:pointer">Price</th>
                     <th>Enabled</th>
                     <th></th>
                     <th></th>
                 </tr>
                 </thead>
                 <tbody>
-                    ${products.map((product, index) => `
-                        <tr>
-                            <td><input type="checkbox" value="${index}"></td>
-                            <td>${product.title}</td>
-                            <td>${product.sku}</td>
-                            <td>${product.brand}</td>
-                            <td>${product.category}</td>
-                            <td>${product.shortDescription}</td>
-                            <td>$${product.price.toFixed(2)}</td>
-                            <td class="checkbox-cell">
-                                <input type="checkbox" name="enabled[]" value="${index}" ${product.enabled ? 'checked' : ''}>
-                            </td>
-                            <td class="button-cell">
-                                <button onclick="window.location.href='/admin/products/${product.sku}'">Edit</button>
-                            </td>
-                            <td class="button-cell">
-                                <button class="delete-btn" data-sku="${product.sku}" data-title="${product.title}">Delete</button>
-                            </td>
-                        </tr>
-                    `).join('')}
+                    
                 </tbody>
             </table>
     `;
 
         // Insert HTML into container first
         const content = document.getElementById('content');
+        content.innerHTML = html;
+
+        this.renderTable(products);
 
         content.addEventListener('click', async (e) => {
             const btn = e.target.closest('.delete-btn');
@@ -122,6 +236,62 @@ export class Products {
             await this.deleteProduct(sku, title, btn);
         });
 
-        content.innerHTML = html;
+        const searchInput = document.getElementById('product-search');
+        searchInput.addEventListener('input', async () => {
+            await this.search(searchInput.value);
+        });
+
+        const filterBtn = document.getElementById('filter-btn');
+        filterBtn.addEventListener('click', async () => {
+            await this.filter();
+        });
+
+        content.querySelectorAll('th[data-column]').forEach(th => {
+            th.addEventListener('click', async () => {
+                const column = th.dataset.column;
+                await this.handleSort(column);
+            });
+        });
+    }
+
+    /**
+     * Re-renders the table (<tbody>) with a fresh products array
+     *
+     * @param products
+     */
+    renderTable(products) {
+        const tbody = document.querySelector('table tbody');
+        if (!tbody) return;
+
+        tbody.innerHTML = products.map((product, index) => `
+            <tr>
+                <td><input type="checkbox" value="${index}"></td>
+                <td>${product.title}</td>
+                <td>${product.sku}</td>
+                <td>${product.brand}</td>
+                <td>${product.category}</td>
+                <td>${product.shortDescription}</td>
+                <td>$${product.price.toFixed(2)}</td>
+                <td class="checkbox-cell">
+                    <input type="checkbox" name="enabled[]" value="${index}" ${product.enabled ? 'checked' : ''}>
+                </td>
+                <td class="button-cell">
+                    <button onclick="window.location.href='/admin/products/${product.sku}'">Edit</button>
+                </td>
+                <td class="button-cell">
+                    <button class="delete-btn" data-sku="${product.sku}" data-title="${product.title}">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+
+        // Reattaching delete listeners
+        const content = document.getElementById('content');
+        content.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const sku = btn.dataset.sku;
+                const title = btn.dataset.title;
+                await this.deleteProduct(sku, title, btn);
+            });
+        });
     }
 }

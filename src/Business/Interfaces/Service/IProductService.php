@@ -30,6 +30,18 @@ interface IProductService
     public function getBySKU(string $sku): ?ProductDTO;
 
     /**
+     * Receives filter parameters, returns filtered data
+     *
+     * @param string $search
+     * @param bool $enabledOnly
+     * @param string|null $titleAsc
+     * @param string|null $priceAsc
+     *
+     * @return array
+     */
+    public function getFiltered(string $search, bool $enabledOnly, ?string $titleAsc, ?string $priceAsc): array;
+
+    /**
      * Delete a product by its SKU.
      *
      * @param string $sku The SKU of the product to delete.
