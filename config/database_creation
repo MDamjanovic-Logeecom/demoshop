@@ -34,37 +34,39 @@ CREATE TABLE `products` (
    `Title` varchar(100) NOT NULL,
    `SKU` varchar(50) NOT NULL,
    `Brand` varchar(50) DEFAULT NULL,
-   `Category` varchar(100) DEFAULT NULL,
+   `Category` varchar(20) DEFAULT NULL,
    `Dscrptn` varchar(100) DEFAULT NULL,
    `LDscrptn` longtext,
    `Image` longblob,
    `Price` decimal(10,2) DEFAULT NULL,
    `Enabled` tinyint(1) DEFAULT '1',
-   PRIMARY KEY (`SKU`)
- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+   PRIMARY KEY (`SKU`),
+   KEY `fk_product_category` (`Category`),
+   CONSTRAINT `fk_product_category` FOREIGN KEY (`Category`) REFERENCES `categories` (`code`) ON DELETE RESTRICT ON UPDATE CASCADE
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 
-//TODO to generate all these products with concrete category references!!!
-INSERT INTO `products` (`Title`, `SKU`, `Brand`, `Category`, `Dscrptn`, `LDscrptn`, `Image`, `Price`, `Enabled`) VALUES
-('Asus Game Master', 'ASU-GM-001', 'Asus', 'Laptops > Gaming', 'Intel i7, 16GB RAM, 512GB SSD', 'Powerful gaming laptop with advanced cooling and RGB keyboard.', NULL, 1299.99, 1),
-('HP Spectre X360', 'HP-SPX-002', 'HP', 'Laptops > Ultrabooks', 'Intel i5, 8GB RAM, 256GB SSD', 'Lightweight 2-in-1 ultrabook with touchscreen and long battery life.', NULL, 1099.00, 0),
-('Dell XPS 15', 'DEL-XPS-003', 'Dell', 'Laptops > Workstation', 'Intel i7, 32GB RAM, 1TB SSD', 'Professional-grade performance for creative work.', NULL, 1999.50, 0),
-('Lenovo Legion 5', 'LEN-LEG-004', 'Lenovo', 'Laptops > Gaming', 'AMD Ryzen 7, 16GB RAM, RTX 4060', 'High refresh rate gaming laptop with modern cooling design.', NULL, 1399.00, 0),
-('Apple MacBook Air M2', 'APP-MBA-005', 'Apple', 'Laptops > Ultrabooks', 'Apple M2, 8GB RAM, 256GB SSD', 'Ultra-thin design with excellent performance and battery life.', NULL, 1499.00, 1),
-('Acer Predator Helios', 'ACE-PRE-006', 'Acer', 'Laptops > Gaming', 'Intel i9, 32GB RAM, 1TB SSD', 'Flagship gaming laptop with customizable lighting.', NULL, 2199.99, 0),
-('MSI Stealth 15', 'MSI-STL-007', 'MSI', 'Laptops > Gaming', 'Intel i7, 16GB RAM, RTX 4070', 'Compact gaming laptop with silent cooling.', NULL, 1799.00, 1),
-('Razer Blade 14', 'RAZ-BLD-008', 'Razer', 'Laptops > Gaming', 'AMD Ryzen 9, 16GB RAM, RTX 4080', 'Premium gaming laptop with CNC aluminum chassis.', NULL, 2499.99, 1),
-('Samsung Galaxy Book 3', 'SAM-GB3-009', 'Samsung', 'Laptops > Everyday', 'Intel i5, 8GB RAM, 512GB SSD', 'Sleek ultrabook for productivity and entertainment.', NULL, 1099.00, 1),
-('Microsoft Surface Laptop 5', 'MSC-SLP-010', 'Microsoft', 'Laptops > Ultrabooks', 'Intel i7, 16GB RAM, 512GB SSD', 'Modern design with touchscreen and Windows integration.', NULL, 1399.00, 0),
-('HP Omen 17', 'HP-OMN-011', 'HP', 'Laptops > Gaming', 'Intel i9, 32GB RAM, RTX 4080', 'Performance beast for gaming and content creation.', NULL, 2499.00, 0),
-('Lenovo ThinkPad X1', 'LEN-X1-012', 'Lenovo', 'Laptops > Business', 'Intel i7, 16GB RAM, 1TB SSD', 'Premium business laptop with fingerprint reader.', NULL, 1899.00, 1),
-('Apple MacBook Pro 16', 'APP-MBP-013', 'Apple', 'Laptops > Workstation', 'Apple M2 Pro, 16GB RAM, 512GB SSD', 'Top-tier Apple laptop for professionals.', NULL, 2799.00, 1),
-('Dell Inspiron 15', 'DEL-INS-014', 'Dell', 'Laptops > Everyday', 'Intel i5, 8GB RAM, 256GB SSD', 'Reliable laptop for home and office use.', NULL, 899.00, 1),
-('Acer Aspire 7', 'ACE-ASP-015', 'Acer', 'Laptops > Everyday', 'AMD Ryzen 5, 8GB RAM, 512GB SSD', 'Balanced laptop for students and professionals.', NULL, 749.99, 1),
-('MSI Creator Z17', 'MSI-CRZ-016', 'MSI', 'Laptops > Workstation', 'Intel i9, 32GB RAM, RTX 4070', 'Designed for creative professionals with color-accurate display.', NULL, 2599.00, 0),
-('Asus ZenBook 14', 'ASU-ZNB-017', 'Asus', 'Laptops > Ultrabooks', 'Intel i7, 16GB RAM, 512GB SSD', 'Elegant ultrabook with OLED display.', NULL, 1299.00, 1),
-('HP Pavilion 14', 'HP-PAV-018', 'HP', 'Laptops > Everyday', 'Intel i3, 8GB RAM, 256GB SSD', 'Affordable, lightweight everyday laptop.', NULL, 649.00, 0),
-('Lenovo IdeaPad 3', 'LEN-IDP-019', 'Lenovo', 'Laptops > Everyday', 'AMD Ryzen 3, 8GB RAM, 256GB SSD', 'Entry-level laptop for light productivity.', NULL, 499.00, 0),
-('Razer Book 13', 'RAZ-BOK-020', 'Razer', 'Laptops > Ultrabooks', 'Intel i7, 16GB RAM, 512GB SSD', 'Stylish productivity laptop with premium build quality.', NULL, 1699.00, 1);
+INSERT INTO products (Title, SKU, Brand, Category, Dscrptn, LDscrptn, Price, Enabled)
+VALUES
+('4K TV', 'ELEC001', 'Samsung', 'ELEC', 'Smart 4K TV', 'High-quality 4K UHD television', 799.99, 1),
+('Bluetooth Speaker', 'ELEC002', 'JBL', 'ELEC', 'Portable speaker', 'Wireless Bluetooth speaker with bass boost', 129.99, 1),
+('Desktop PC', 'COMP001', 'HP', 'COMP', 'All-in-one desktop', 'Powerful desktop computer for home or office', 999.99, 1),
+('External Hard Drive', 'COMP002', 'Seagate', 'COMP', '1TB HDD', 'External hard drive with USB 3.0 support', 89.99, 1),
+('Basic Laptop', 'LAPT001', 'Dell', 'LAPT', 'Entry-level laptop', '15-inch laptop with Intel i3 processor', 549.99, 1),
+('Student Laptop', 'LAPT002', 'Lenovo', 'LAPT', 'Affordable student laptop', 'Lightweight and reliable laptop for students', 499.99, 1),
+('Smartphone A', 'SMART001', 'Apple', 'SMART', 'Latest iPhone', 'Flagship smartphone with advanced camera system', 1099.99, 1),
+('Smartphone B', 'SMART002', 'Samsung', 'SMART', 'Galaxy model', 'High-end Android smartphone with AMOLED display', 899.99, 1),
+('Tablet A', 'TAB001', 'Apple', 'TAB', 'iPad Air', 'Light and powerful tablet with A15 chip', 699.99, 1),
+('Tablet B', 'TAB002', 'Samsung', 'TAB', 'Galaxy Tab S9', 'Android tablet for entertainment and productivity', 649.99, 1),
+('Gaming Desktop', 'DESK001', 'MSI', 'DESK', 'Gaming PC', 'High-performance desktop with RTX GPU', 1499.99, 1),
+('Office Desktop', 'DESK002', 'Dell', 'DESK', 'Business desktop', 'Compact and quiet desktop for offices', 849.99, 1),
+('Graphics Card', 'COMP-COMP001', 'NVIDIA', 'COMP-COMP', 'RTX 4070', 'Powerful GPU for gaming and rendering', 599.99, 1),
+('RAM 16GB', 'COMP-COMP002', 'Corsair', 'COMP-COMP', 'DDR5 RAM kit', 'High-speed 16GB DDR5 memory kit', 149.99, 1),
+('Predator Gaming Laptop', 'GAM-LAPT001', 'Acer', 'GAM-LAPT', 'Gaming beast', 'RTX 4060, i7, 16GB RAM', 1699.99, 1),
+('ROG Strix', 'GAM-LAPT002', 'Asus', 'GAM-LAPT', 'Pro gaming laptop', 'Ryzen 9, RTX 4070, 1TB SSD', 1999.99, 1),
+('ThinkPad X1', 'WORK-LAPT001', 'Lenovo', 'WORK-LAPT', 'Business laptop', 'Durable laptop for professionals', 1399.99, 1),
+('HP EliteBook', 'WORK-LAPT002', 'HP', 'WORK-LAPT', 'Premium work laptop', 'Secure and powerful for enterprise use', 1299.99, 1),
+('MacBook Air M2', 'ULTRA001', 'Apple', 'ULTRA', 'Light ultrabook', 'M2 chip, silent, long battery life', 1199.99, 1),
+('Dell XPS 13', 'ULTRA002', 'Dell', 'ULTRA', 'Premium ultrabook', '13-inch ultrabook with OLED display', 1149.99, 1);
 
 //-------------------------------------------------- User table:
 

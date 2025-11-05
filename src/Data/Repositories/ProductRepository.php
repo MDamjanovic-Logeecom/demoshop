@@ -143,6 +143,18 @@ class ProductRepository implements IProductRepository
     }
 
     /**
+     * Return how many products have a given category code
+     *
+     * @param string $categoryCode
+     *
+     * @return int
+     */
+    public function countByCategory(string $categoryCode): int
+    {
+        return EloquentProduct::where('Category', $categoryCode)->count();
+    }
+
+    /**
      * Maps a row from the table and maps it to a Product model object.
      *
      * @param EloquentProduct $eloquentProduct from the database.

@@ -3,21 +3,40 @@
 namespace Demoshop\Local\Business\Services;
 
 use Demoshop\Local\Business\Interfaces\Repository\ICategoryRepository;
+use Demoshop\Local\Business\Interfaces\Repository\IProductRepository;
 use Demoshop\Local\Business\Interfaces\Service\ICategoryService;
 use Demoshop\Local\DTO\CategoryDTO;
 
 class CategoryService implements ICategoryService
 {
+    /**
+     * Category repository for reaching categories data
+     *
+     * @var ICategoryRepository
+     */
     private ICategoryRepository $repository;
+    /**
+     * Product repository for reaching products data
+     *
+     * @var IProductRepository
+     */
+    private IProductRepository $productRepository;
 
     /**
      * @param ICategoryRepository $repository
+     * @param IProductRepository $productRepository
      */
-    public function __construct(ICategoryRepository $repository)
+    public function __construct(ICategoryRepository $repository, IProductRepository $productRepository)
     {
         $this->repository = $repository;
+        $this->productRepository = $productRepository;
     }
 
+    /**
+     * Get all categories from database
+     *
+     * @return array
+     */
     public function getAll(): array
     {
         return $this->repository->getAll();
@@ -56,8 +75,20 @@ class CategoryService implements ICategoryService
      */
     public function deleteByCode(string $code): bool
     {
-        if (empty($code)) {
+        $category = $this->repository->getByCode($code);
+        if (!$category) return false;
+
+        // Category itself has products?
+        if ($this->productRepository->countByCategory($category->code) > 0) {
             return false;
+        }
+
+        // Check for all descendants
+        $subcategories = $this->repository->getAllDescendants($category->id);
+        foreach ($subcategories as $sub) {
+            if ($this->productRepository->countByCategory($sub->code) > 0) {
+                return false;
+            }
         }
 
         return $this->repository->deleteByCode($code);

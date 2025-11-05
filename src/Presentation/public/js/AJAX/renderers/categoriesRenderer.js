@@ -38,6 +38,11 @@ export class Categories {
         });
     }
 
+    /**
+     * changes the mode of the right-side panel.
+     *
+     * @param enable string that defines what mode will be enabled
+     */
     toggleEditMode(enable) {
         const detailPanel = document.querySelector('.category-details');
         const viewButtons = detailPanel.querySelector('.view-buttons');
@@ -98,6 +103,12 @@ export class Categories {
         }
     }
 
+    /**
+     * All the event handling from the page
+     *
+     * @param container
+     * @param categories
+     */
     categoryEventsLogic(container, categories) {
         const detailPanel = document.querySelector('.category-details');
         const titleInput = detailPanel.querySelector('input[name="title"]');
@@ -241,8 +252,12 @@ export class Categories {
         /**
          * Deletes selected category
          * (attaches listener for set delete action to delete buttons)
-         *///TODO: CHECK IF PRODUCT IS CONNECTED TO IT - MAKE THAT CHECK HERE OR AT BACKEND! (when products-category connection implemented)
+         */
         const attachDeleteListener = (btn) => {
+            if (!btn) return;
+            if (btn.dataset.deleteAttached === "true") return;
+            btn.dataset.deleteAttached = "true";
+
             const freshBtn = btn.cloneNode(true);
             btn.replaceWith(freshBtn);
 
@@ -277,9 +292,6 @@ export class Categories {
                 }
             });
         };
-
-        attachDeleteListener(viewDeleteBtn);
-        attachDeleteListener(editDeleteBtn);
     }
 
     /**
@@ -381,7 +393,6 @@ export class Categories {
                 </div>
             </div>
     `;
-
         // Return as a fragment first
         setTimeout(() => {
             const container = document.querySelector('.categories-tree');

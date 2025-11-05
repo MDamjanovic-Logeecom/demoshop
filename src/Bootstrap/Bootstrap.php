@@ -106,7 +106,9 @@ class Bootstrap
 
         $this->registry->register(ICategoryRepository::class, fn() => new CategoryRepository());
         $this->registry->register(ICategoryService::class,
-            fn() => new CategoryService($this->registry->get(ICategoryRepository::class))
+            fn() => new CategoryService($this->registry->get(ICategoryRepository::class),
+                $this->registry->get(IProductRepository::class)
+            )
         );
     }
 
@@ -116,7 +118,8 @@ class Bootstrap
     private function initControllers(): void
     {
         $this->registry->register(ProductController::class,
-            fn() => new ProductController($this->registry->get(IProductService::class))
+            fn() => new ProductController($this->registry->get(IProductService::class),
+                $this->registry->get(ICategoryService::class))
         );
 
         $this->registry->register(FragmentController::class,

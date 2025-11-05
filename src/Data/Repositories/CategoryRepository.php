@@ -8,7 +8,11 @@ use Demoshop\Local\DTO\CategoryDTO;
 
 class CategoryRepository implements ICategoryRepository
 {
-
+    /**
+     * get all categorise from the database
+     *
+     * @return array
+     */
     public function getAll(): array
     {
         $eloquentCategories = EloquentCategory::all();
@@ -19,6 +23,24 @@ class CategoryRepository implements ICategoryRepository
         }
 
         return $categories;
+    }
+
+    /**
+     * Get a single category by its code.
+     *
+     * @param string $code of the category to fetch.
+     *
+     * @return CategoryDTO|null The product object corresponding to the given code.
+     */
+    public function getByCode(string $code): ?CategoryDTO
+    {
+        $eloquentCategory = EloquentCategory::where('code', $code)->first();
+
+        if (!$eloquentCategory) {
+            return null;
+        }
+
+        return $this->mapEloquentToDTO($eloquentCategory);
     }
 
     /**
@@ -85,6 +107,45 @@ class CategoryRepository implements ICategoryRepository
         }
 
         return $eloquentCategory->delete();
+    }
+
+    /**
+     * Get first level of descendants of a given category
+     *
+     * @param int $parentId
+     *
+     * @return array
+     */
+    public function getChildren(int $parentId): array
+    {
+        $eloquentChildren = EloquentCategory::where('parent_id', $parentId)->get();
+
+        $children = [];
+        foreach ($eloquentChildren as $child) {
+            $children[] = $this->mapEloquentToDTO($child);
+        }
+
+        return $children;
+    }
+
+    /**
+     * Get all descendants recursively of a given category
+     *
+     * @param int $parentId
+     *
+     * @return array
+     */
+    public function getAllDescendants(int $parentId): array
+    {
+        $descendants = [];
+        $children = $this->getChildren($parentId);
+
+        foreach ($children as $child) {
+            $descendants[] = $child;
+            $descendants = array_merge($descendants, $this->getAllDescendants($child->id));
+        }
+
+        return $descendants;
     }
 
     /**

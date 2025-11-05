@@ -128,10 +128,16 @@ class CategoryController
         $deleted = $this->service->deleteByCode($code);
 
         if ($deleted) {
-            return new JsonResponse(['status' => 'success', 'message' => 'Category deleted successfully.']);
+            return new JsonResponse([
+                'status' => 'success',
+                'message' => 'Category deleted successfully.',
+            ]);
         }
 
-        return new JsonResponse(['status' => 'error', 'message' => 'Failed to delete category.']);
+        return new JsonResponse([
+            'status' => 'error',
+            'message' => 'Cannot delete category: it has products or subcategories with products.',
+        ]);
     }
 
     /**

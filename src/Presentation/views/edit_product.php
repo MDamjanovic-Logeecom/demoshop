@@ -1,5 +1,6 @@
 <?php
 /** @var $product */
+/** @var $categories  */
 ?>
 
 <!DOCTYPE html>
@@ -17,7 +18,7 @@
             <div class="left-side">
                 <div class="form-group">
                     <label>SKU:</label>
-                    <input type="text" name="sku" value="<?= htmlspecialchars($product->sku) ?>">
+                    <input type="text" name="sku" value="<?= htmlspecialchars($product->sku) ?>" required>
                 </div>
                 <div class="form-group">
                     <label>Title:</label>
@@ -29,10 +30,15 @@
                 </div>
                 <div class="form-group">
                     <label>Category:</label>
-                    <select name="category">
-                        <option value="Laptop" <?= $product->category === 'Laptop' ? 'selected' : '' ?>>Laptop
-                        </option>
-                    </select>
+                        <select name="category" required>
+                            <option value="">Select category</option>
+                            <?php foreach ($categories as $cat): ?>
+                                <option value="<?= htmlspecialchars($cat->code) ?>"
+                                        <?= $product->category === $cat->code ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($cat->title) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                 </div>
                 <div class="form-group">
                     <label>Price:</label>

@@ -2,6 +2,7 @@
 
 namespace Demoshop\Local\Presentation\controllers;
 
+use Demoshop\Local\Business\Interfaces\Service\ICategoryService;
 use Demoshop\Local\Business\Interfaces\Service\IProductService;
 use Demoshop\Local\DTO\ProductDTO;
 use Demoshop\Local\Infrastructure\http\ErrorResponse;
@@ -23,15 +24,20 @@ class ProductController
      * Concrete instance is injected in the constructor.
      */
     private IProductService $service;
+    /**
+     * @var ICategoryService service layer for categories
+     */
+    private ICategoryService $categoryService;
 
     /**
      * ProductController constructor.
      *
      * Initializes the ProductService with its repository.
      */
-    public function __construct(IProductService $service)
+    public function __construct(IProductService $service, ICategoryService $categoryService)
     {
         $this->service = $service;
+        $this->categoryService = $categoryService;
     }
 
     /**
@@ -156,7 +162,12 @@ class ProductController
             return new ErrorResponse('Product not found.', 404); // 404 Not Found
         }
 
-        return new HtmlResponse('edit_product.php', ['product' => $productDTO], 200);
+        $categories = $this->categoryService->getAll();
+
+        return new HtmlResponse('edit_product.php', [
+            'product' => $productDTO,
+            'categories' => $categories,
+            ],200);
     }
 
     /**
@@ -168,7 +179,9 @@ class ProductController
      */
     public function showAddForm(HttpRequest $request): HtmlResponse
     {
-        return new HtmlResponse('add_product.php');
+        $categories = $this->categoryService->getAll();
+
+        return new HtmlResponse('add_product.php', ['categories' => $categories]);
     }
 
     /**
