@@ -139,7 +139,8 @@ export class Categories {
                 if (!li) return;
 
                 // Remove previous highlight
-                container.querySelectorAll('.selected-category').forEach(el => el.classList.remove('selected-category'));
+                container.querySelectorAll('.selected-category').forEach(
+                    el => el.classList.remove('selected-category'));
                 li.classList.add('selected-category');
 
                 const id = parseInt(li.dataset.id, 10);

@@ -217,10 +217,6 @@ export class Products {
      * @returns {Promise<void>}
      */
     async render() {
-        // this.showSpinner();
-        // const products = await this.fetchData();
-        // this.hideSpinner();
-
         const html = `
             <h2>Products</h2>
         
