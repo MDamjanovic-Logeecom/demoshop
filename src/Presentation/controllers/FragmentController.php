@@ -18,7 +18,16 @@ class FragmentController
      * Concrete instance is injected in the constructor.
      */
     private IProductService $productService;
+    /**
+     * @var ICategoryService Service layer for category-related operations.
+     *  Concrete instance is injected in the constructor.
+     */
     private ICategoryService $categoryService;
+
+    /**
+     * Number of products to be displayed in one page on the UI
+     */
+    const int PAGE_LIMIT = 10;
 
     /**
      * ProductController constructor.
@@ -101,7 +110,7 @@ class FragmentController
         $priceAsc = $request->getHttpGet('priceAsc');
         $page = $request->getHttpGet('page');
 
-        $result = $this->productService->getFiltered($search, $enabledOnly, $titleAsc, $priceAsc, $page);
+        $result = $this->productService->getFiltered($search, $enabledOnly, $titleAsc, $priceAsc, $page, self::PAGE_LIMIT);
 
         $data = array_map(fn($product) => [
             'sku' => $product->sku,

@@ -37,10 +37,11 @@ interface IProductService
      * @param string|null $titleAsc
      * @param string|null $priceAsc
      * @param int $page
+     * @param int $pageLimit
      *
      * @return array
      */
-    public function getFiltered(string $search, bool $enabledOnly, ?string $titleAsc, ?string $priceAsc, int $page): array;
+    public function getFiltered(string $search, bool $enabledOnly, ?string $titleAsc, ?string $priceAsc, int $page, int $pageLimit): array;
 
     /**
      * Delete a product by its SKU.

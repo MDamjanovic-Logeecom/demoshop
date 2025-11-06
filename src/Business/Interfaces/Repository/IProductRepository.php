@@ -27,6 +27,20 @@ interface IProductRepository
     public function getBySKU(string $sku): ?ProductDTO;
 
     /**
+     * Receives filter parameters, returns filtered products
+     *
+     * @param string $search
+     * @param bool $enabledOnly
+     * @param string|null $titleAsc
+     * @param string|null $priceAsc
+     * @param int $page
+     * @param int $pageLimit
+     *
+     * @return array
+     */
+    public function filterProducts(string $search, bool $enabledOnly, ?string $titleAsc, ?string $priceAsc, int $page, int $pageLimit): array;
+
+    /**
      * Delete a product by SKU.
      *
      * @param string $sku The SKU of the product to delete.

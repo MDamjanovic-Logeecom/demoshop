@@ -73,20 +73,12 @@ export class Products {
 
         this.filters.searchTerm = searchTerm.toLowerCase().trim();
         this.filters.page = 1;
-        const products = await this.fetchData();
-        this.renderTable(products);
-    }
 
-    /**
-     * Filters out / in the enabled products
-     *
-     * @returns {Promise<void>}
-     */
-    async filter(){
-        this.filters.enabledOnly = !this.filters.enabledOnly;
-        this.filters.page = 1;
+        this.showSpinner();
         const products = await this.fetchData();
+        this.hideSpinner();
         this.renderTable(products);
+
     }
 
     /**
@@ -113,8 +105,12 @@ export class Products {
         }
 
         this.filters.page = 1;
+
+        this.showSpinner();
         const products = await this.fetchData();
+        this.hideSpinner();
         this.renderTable(products);
+
 
         // Visual indicator arrows in header
         this.updateSortIndicators();
@@ -147,8 +143,11 @@ export class Products {
         if (newPage < 1) return;
         this.filters.page = newPage;
 
+        this.showSpinner();
         const products = await this.fetchData();
+        this.hideSpinner();
         this.renderTable(products);
+
         this.renderPagination(); // Refresh pagination UI
     }
 
@@ -189,12 +188,39 @@ export class Products {
     }
 
     /**
+     * Hide spinner and display spinner while table loading
+     */
+    showSpinner() {
+        const spinner = document.getElementById('loading-spinner');
+        const table = document.getElementById('products-table');
+        if (spinner && table) {
+            spinner.classList.remove('hidden');
+            table.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Hide spinner and show table when table loaded
+     */
+    hideSpinner() {
+        const spinner = document.getElementById('loading-spinner');
+        const table = document.getElementById('products-table');
+        if (spinner && table) {
+            spinner.classList.add('hidden');
+            table.classList.remove('hidden');
+        }
+    }
+
+    /**
      * Render the products page
      *
      * @returns {Promise<void>}
      */
     async render() {
-        const products = await this.fetchData();
+        // this.showSpinner();
+        // const products = await this.fetchData();
+        // this.hideSpinner();
+
         const html = `
             <h2>Products</h2>
         
@@ -229,16 +255,43 @@ export class Products {
                     
                 </tbody>
             </table>
+            
+            <div id="loading-spinner" class="spinner hidden">
+                <div class="spinner-circle"></div>
+                <p>Loading products...</p>
+            </div>
+            
             <div id="pagination"></div>
+            
+            <div id="filter-modal" class="modal hidden">
+                <div class="modal-content">
+                    <h3>Filter Products</h3>
+                    <label>
+                        <input type="checkbox" id="filter-enabled" /> Show only enabled products
+                    </label>
+                    <div class="modal-actions">
+                        <button id="apply-filters">Apply</button>
+                        <button id="close-filters">Cancel</button>
+                    </div>
+                </div>
+            </div>
     `;
 
         // Insert HTML into container first
         const content = document.getElementById('content');
         content.innerHTML = html;
 
+        this.showSpinner();
+
+        const products = await this.fetchData();
+
+        this.hideSpinner();
         this.renderTable(products);
         this.renderPagination();
 
+        /**
+         * Handle product deletion on delete button click -> triggers deleteProduct(sku, title, pressed button)
+         */
         content.addEventListener('click', async (e) => {
             const btn = e.target.closest('.delete-btn');
             if (!btn) return;
@@ -248,16 +301,52 @@ export class Products {
             await this.deleteProduct(sku, title, btn);
         });
 
+        /**
+         * Handle search input -> triggers search(input)
+         */
         const searchInput = document.getElementById('product-search');
         searchInput.addEventListener('input', async () => {
             await this.search(searchInput.value);
         });
 
         const filterBtn = document.getElementById('filter-btn');
-        filterBtn.addEventListener('click', async () => {
-            await this.filter();
+        const modal = document.getElementById('filter-modal');
+        const closeFilters = document.getElementById('close-filters');
+        const applyFilters = document.getElementById('apply-filters');
+        const enabledCheckbox = document.getElementById('filter-enabled');
+
+        /**
+         * Handle filter button click -> opens modal that displays filter options
+         */
+        filterBtn.addEventListener('click', () => {
+            enabledCheckbox.checked = this.filters.enabledOnly;
+            modal.classList.remove('hidden');
         });
 
+        /**
+         * Handle cancel button click' -> closes modal
+         */
+        closeFilters.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+
+        /**
+         * Handle apply button click -> applies filters and fetches filtered data
+         */
+        applyFilters.addEventListener('click', async () => {
+            this.filters.enabledOnly = enabledCheckbox.checked;
+            this.filters.page = 1;
+            modal.classList.add('hidden');
+
+            this.showSpinner();
+            const products = await this.fetchData();
+            this.hideSpinner();
+            this.renderTable(products);
+        });
+
+        /**
+         * Handle sorting by column on column header click
+         */
         content.querySelectorAll('th[data-column]').forEach(th => {
             th.addEventListener('click', async () => {
                 const column = th.dataset.column;

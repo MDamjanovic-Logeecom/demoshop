@@ -292,6 +292,8 @@ export class Categories {
                 }
             });
         };
+        attachDeleteListener(viewDeleteBtn);
+        attachDeleteListener(editDeleteBtn);
     }
 
     /**
@@ -393,14 +395,13 @@ export class Categories {
                 </div>
             </div>
     `;
-        // Return as a fragment first
+        const content = document.getElementById('content');
+        content.innerHTML = html;
+
         setTimeout(() => {
             const container = document.querySelector('.categories-tree');
             if (container) this.addExpandCollapseLogic(container);
             this.categoryEventsLogic(container, categories);
         });
-
-        const content = document.getElementById('content');
-        content.innerHTML = html;
     }
 }

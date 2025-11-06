@@ -70,10 +70,11 @@ class ProductRepository implements IProductRepository
      * @param string|null $titleAsc
      * @param string|null $priceAsc
      * @param int $page
+     * @param int $pageLimit
      *
      * @return array
      */
-    public function filterProducts(string $search, bool $enabledOnly, ?string $titleAsc, ?string $priceAsc, int $page): array
+    public function filterProducts(string $search, bool $enabledOnly, ?string $titleAsc, ?string $priceAsc, int $page, int $pageLimit): array
     {
         $query = EloquentProduct::query();
 
@@ -101,11 +102,11 @@ class ProductRepository implements IProductRepository
         // Get total before slicing
         $total = $query->count();
 
-        $totalPages = (int) max(1, ceil($total / 10));
+        $totalPages = (int) max(1, ceil($total / $pageLimit));
         $page = max(1, min($page, $totalPages));
 
         // forPage(page, per page) applies limit/offset
-        $eloquentProducts = $query->forPage($page, 10)->get();
+        $eloquentProducts = $query->forPage($page, $pageLimit)->get();
 
         return [
             'products' => array_map([$this, 'mapEloquentToDTO'], $eloquentProducts->all()),
