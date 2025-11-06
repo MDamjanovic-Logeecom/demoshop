@@ -22,7 +22,7 @@ class CreateProducts
             $table->string('Category', 20)->nullable();
             $table->string('Dscrptn', 100)->nullable();
             $table->longText('LDscrptn')->nullable();
-            $table->binary('Image')->nullable();
+            $table->longText('image')->nullable();
             $table->decimal('Price', 10, 2)->nullable();
             $table->boolean('Enabled')->default(true);
 
@@ -32,6 +32,8 @@ class CreateProducts
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
         });
+
+        Capsule::connection()->statement('ALTER TABLE products MODIFY Image LONGBLOB');
     }
 
     /**

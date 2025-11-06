@@ -1,15 +1,13 @@
 <?php
-
 /**
  * Stand-alone migrations master script
  */
-
 require __DIR__ . '/../vendor/autoload.php';
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 // Load environment variables
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
 // Bootstrap Eloquent
@@ -24,6 +22,7 @@ $capsule->addConnection([
     'collation' => 'utf8mb4_unicode_ci',
     'prefix' => '',
 ]);
+
 $capsule->setAsGlobal();
 $capsule->bootEloquent();
 

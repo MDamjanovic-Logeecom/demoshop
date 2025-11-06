@@ -1,9 +1,17 @@
 <?php
+require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/Bootstrap/Bootstrap.php';
 
+use Demoshop\Local\Bootstrap\Bootstrap;
 use Demoshop\Local\Data\Models\EloquentCategory;
 use Demoshop\Local\Data\Models\EloquentProduct;
 use Demoshop\Local\Data\Models\EloquentUser;
+use Demoshop\Local\Infrastructure\DI\ServiceRegistry;
+
+$registry = new ServiceRegistry();
+$bootstrap = new Bootstrap($registry);
+
+$bootstrap->init();
 
 try {
 
