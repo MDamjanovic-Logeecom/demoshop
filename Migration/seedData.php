@@ -263,10 +263,35 @@ try {
         echo "Confirm password: ";
         $passwordConfirm = trim(fgets($handle));
 
+        // Validation rules
+        $errors = [];
         if ($password !== $passwordConfirm) {
-            echo "Passwords do not match. Try again.\n";
+            $errors[] = "Passwords do not match.";
         }
-    } while ($password !== $passwordConfirm);
+        if (strlen($password) < 8) {
+            $errors[] = "Password must be at least 8 characters long.";
+        }
+        if (!preg_match('/[A-Z]/', $password)) {
+            $errors[] = "Password must contain at least 1 uppercase letter.";
+        }
+        if (!preg_match('/[a-z]/', $password)) {
+            $errors[] = "Password must contain at least 1 lowercase letter.";
+        }
+        if (!preg_match('/[0-9]/', $password)) {
+            $errors[] = "Password must contain at least 1 number.";
+        }
+        if (!preg_match('/[\W_]/', $password)) {
+            $errors[] = "Password must contain at least 1 special character.";
+        }
+
+        if (!empty($errors)) {
+            echo "Password invalid:\n";
+            foreach ($errors as $err) {
+                echo "  - $err\n";
+            }
+            echo "Please try again.\n\n";
+        }
+    } while (!empty($errors));
 
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
@@ -278,6 +303,8 @@ try {
     echo "Admin account `$username` created successfully.\n";
 
     echo "Seeding completed successfully.\n";
+
+    fclose($handle);
 
 } catch (\Exception $e) {
     echo "Error during seeding: " . $e->getMessage() . "\n";
