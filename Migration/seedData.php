@@ -249,10 +249,33 @@ try {
         EloquentProduct::updateOrCreate(['SKU' => $prod['SKU']], $prod);
     }
 
+    // User creation
+    echo "\nCreate an admin account\n";
+
+    echo "Enter a username: ";
+    $handle = fopen('php://stdin', 'r');
+    $username = trim(fgets($handle));
+
+    do {
+        echo "Enter admin password: ";
+        $password = trim(fgets($handle));
+
+        echo "Confirm password: ";
+        $passwordConfirm = trim(fgets($handle));
+
+        if ($password !== $passwordConfirm) {
+            echo "Passwords do not match. Try again.\n";
+        }
+    } while ($password !== $passwordConfirm);
+
+    $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+
     EloquentUser::updateOrCreate(
-        ['username' => 'admin'],
-        ['password' => password_hash('admin123', PASSWORD_BCRYPT)]
+        ['username' => $username],
+        ['password' => $hashedPassword]
     );
+
+    echo "Admin account `$username` created successfully.\n";
 
     echo "Seeding completed successfully.\n";
 

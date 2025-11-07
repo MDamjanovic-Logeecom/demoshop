@@ -10,16 +10,39 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
-// Bootstrap Eloquent
+// Does database exist before connecting?
+$host = $_ENV['DB_HOST'];
+$dbName = $_ENV['DB_NAME'];
+$user = $_ENV['DB_USER'];
+$pass = $_ENV['DB_PASS'];
+$charset = $_ENV['DB_CHARSET'] ?? 'utf8mb4';
+$collation = 'utf8mb4_unicode_ci';
+
+try {
+    // Connect to MySQL without specifying a database
+    $pdo = new PDO("mysql:host=$host;charset=$charset", $user, $pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]);
+
+    // Create database if it doesn't exist
+    $pdo->exec("CREATE DATABASE IF NOT EXISTS `$dbName` CHARACTER SET $charset COLLATE $collation");
+    echo "Database `$dbName` is ready.\n";
+
+} catch (PDOException $e) {
+    echo "Failed to connect or create database: " . $e->getMessage() . "\n";
+    exit(1);
+}
+
+// DB exists, create the connection
 $capsule = new Capsule;
 $capsule->addConnection([
     'driver' => 'mysql',
-    'host' => $_ENV['DB_HOST'],
-    'database' => $_ENV['DB_NAME'],
-    'username' => $_ENV['DB_USER'],
-    'password' => $_ENV['DB_PASS'],
-    'charset' => $_ENV['DB_CHARSET'] ?? 'utf8mb4',
-    'collation' => 'utf8mb4_unicode_ci',
+    'host' => $host,
+    'database' => $dbName,
+    'username' => $user,
+    'password' => $pass,
+    'charset' => $charset,
+    'collation' => $collation,
     'prefix' => '',
 ]);
 
@@ -40,17 +63,22 @@ if (strtolower($line) !== 'yes') {
     exit;
 }
 
-// Migrations in order
 echo "Running migrations...\n";
 
-CreateCategories::up();
-echo "Categories table created.\n";
+// Helper function for table creation with existence check
+function runMigrationIfMissing(string $tableName, callable $migration): void
+{
+    if (Capsule::schema()->hasTable($tableName)) {
+        echo "Table `$tableName` already exists. Skipping...\n";
+    } else {
+        $migration();
+        echo "Table `$tableName` created successfully.\n";
+    }
+}
 
-CreateProducts::up();
-echo "Products table created.\n";
-
-CreateUsers::up();
-echo "Users table created.\n";
+runMigrationIfMissing('categories', [CreateCategories::class, 'up']);
+runMigrationIfMissing('products', [CreateProducts::class, 'up']);
+runMigrationIfMissing('users', [CreateUsers::class, 'up']);
 
 echo "All migrations ran successfully.\n";
 
