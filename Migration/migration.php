@@ -54,14 +54,14 @@ require __DIR__ . '/migrations/CreateCategories.php';
 require __DIR__ . '/migrations/CreateProducts.php';
 require __DIR__ . '/migrations/CreateUsers.php';
 
-// User to confirm running migrations
-echo "This will create tables in the database `{$_ENV['DB_NAME']}`. Continue? (yes/no): ";
-$handle = fopen('php://stdin', 'r');
-$line = trim(fgets($handle));
-if (strtolower($line) !== 'yes') {
-    echo "Migration aborted.\n";
-    exit;
-}
+// User to confirm running migrations - When on DOcker - must be automated
+//echo "This will create tables in the database `{$_ENV['DB_NAME']}`. Continue? (yes/no): ";
+//$handle = fopen('php://stdin', 'r');
+//$line = trim(fgets($handle));
+//if (strtolower($line) !== 'yes') {
+//    echo "Migration aborted.\n";
+//    exit;
+//}
 
 echo "Running migrations...\n";
 
@@ -82,5 +82,5 @@ runMigrationIfMissing('users', [CreateUsers::class, 'up']);
 
 echo "All migrations ran successfully.\n";
 
-fclose($handle);
+//fclose($handle);
 

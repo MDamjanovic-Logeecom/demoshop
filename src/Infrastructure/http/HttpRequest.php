@@ -79,7 +79,7 @@ class HttpRequest
      * @param string|null $key Optional key of a specific file.
      * @return mixed Array of file(s) if key is null, or a single file array, or null if not found.
      */
-    public function getFiles(string $key = null): mixed
+    public function getFiles(?string $key = null): mixed
     {
         if ($key === null) {
             return $this->files;

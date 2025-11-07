@@ -249,49 +249,52 @@ try {
         EloquentProduct::updateOrCreate(['SKU' => $prod['SKU']], $prod);
     }
 
-    // User creation
-    echo "\nCreate an admin account\n";
+    // User creation - Commented out so that Docker can make it automatically
+//    echo "\nCreate an admin account\n";
+//
+//    echo "Enter a username: ";
+//    $handle = fopen('php://stdin', 'r');
+//    $username = trim(fgets($handle));
+//
+//    do {
+//        echo "Enter admin password: ";
+//        $password = trim(fgets($handle));
+//
+//        echo "Confirm password: ";
+//        $passwordConfirm = trim(fgets($handle));
+//
+//        // Validation rules
+//        $errors = [];
+//        if ($password !== $passwordConfirm) {
+//            $errors[] = "Passwords do not match.";
+//        }
+//        if (strlen($password) < 8) {
+//            $errors[] = "Password must be at least 8 characters long.";
+//        }
+//        if (!preg_match('/[A-Z]/', $password)) {
+//            $errors[] = "Password must contain at least 1 uppercase letter.";
+//        }
+//        if (!preg_match('/[a-z]/', $password)) {
+//            $errors[] = "Password must contain at least 1 lowercase letter.";
+//        }
+//        if (!preg_match('/[0-9]/', $password)) {
+//            $errors[] = "Password must contain at least 1 number.";
+//        }
+//        if (!preg_match('/[\W_]/', $password)) {
+//            $errors[] = "Password must contain at least 1 special character.";
+//        }
+//
+//        if (!empty($errors)) {
+//            echo "Password invalid:\n";
+//            foreach ($errors as $err) {
+//                echo "  - $err\n";
+//            }
+//            echo "Please try again.\n\n";
+//        }
+//    } while (!empty($errors));
 
-    echo "Enter a username: ";
-    $handle = fopen('php://stdin', 'r');
-    $username = trim(fgets($handle));
-
-    do {
-        echo "Enter admin password: ";
-        $password = trim(fgets($handle));
-
-        echo "Confirm password: ";
-        $passwordConfirm = trim(fgets($handle));
-
-        // Validation rules
-        $errors = [];
-        if ($password !== $passwordConfirm) {
-            $errors[] = "Passwords do not match.";
-        }
-        if (strlen($password) < 8) {
-            $errors[] = "Password must be at least 8 characters long.";
-        }
-        if (!preg_match('/[A-Z]/', $password)) {
-            $errors[] = "Password must contain at least 1 uppercase letter.";
-        }
-        if (!preg_match('/[a-z]/', $password)) {
-            $errors[] = "Password must contain at least 1 lowercase letter.";
-        }
-        if (!preg_match('/[0-9]/', $password)) {
-            $errors[] = "Password must contain at least 1 number.";
-        }
-        if (!preg_match('/[\W_]/', $password)) {
-            $errors[] = "Password must contain at least 1 special character.";
-        }
-
-        if (!empty($errors)) {
-            echo "Password invalid:\n";
-            foreach ($errors as $err) {
-                echo "  - $err\n";
-            }
-            echo "Please try again.\n\n";
-        }
-    } while (!empty($errors));
+    $username = getenv('TEST_ADMIN');
+    $password = getenv('TEST_PW');
 
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
@@ -304,7 +307,7 @@ try {
 
     echo "Seeding completed successfully.\n";
 
-    fclose($handle);
+    //fclose($handle);
 
 } catch (\Exception $e) {
     echo "Error during seeding: " . $e->getMessage() . "\n";
